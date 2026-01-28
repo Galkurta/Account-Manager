@@ -8,7 +8,7 @@
 
 [Setup]
 
-AppId={{5B6A0D71-E574-4DDF-A0D9-60EEE73A43CD}}
+AppId={{C6E66095-6834-4474-87E6-DBC48FF96C49}}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 
@@ -56,18 +56,25 @@ var
 function CheckForPreviousVersion: Boolean;
 var
   S: String;
+  AppId: String;
 begin
+  AppId := '{C6E66095-6834-4474-87E6-DBC48FF96C49}';
+  Result := False;
 
-  if RegQueryStringValue(HKLM64, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{C6E66095-6834-4474-87E6-DBC48FF96C49}_is1', 'UninstallString', S) then begin
+  // Check HKCU (Current User - Most likely due to PrivilegesRequired=lowest)
+  if RegQueryStringValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\' + AppId + '_is1', 'UninstallString', S) then begin
     UninstallPath := RemoveQuotes(S);
     Result := True;
   end
-
-  else if RegQueryStringValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{C6E66095-6834-4474-87E6-DBC48FF96C49}_is1', 'UninstallString', S) then begin
+  // Check HKLM (32-bit View - Default for non-64bit mode installer)
+  else if RegQueryStringValue(HKLM, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\' + AppId + '_is1', 'UninstallString', S) then begin
     UninstallPath := RemoveQuotes(S);
     Result := True;
-  end else begin
-    Result := False;
+  end
+  // Check HKLM64 (64-bit View - Explicit check)
+  else if RegQueryStringValue(HKLM64, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\' + AppId + '_is1', 'UninstallString', S) then begin
+    UninstallPath := RemoveQuotes(S);
+    Result := True;
   end;
 end;
 
