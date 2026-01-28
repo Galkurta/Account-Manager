@@ -1,0 +1,88 @@
+<Page x:Class="RobloxAccountManager.Views.AboutPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:vm="clr-namespace:RobloxAccountManager.ViewModels"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="About">
+
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Hero -->
+            <RowDefinition Height="Auto"/> <!-- Cards -->
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/> <!-- Footer -->
+        </Grid.RowDefinitions>
+
+        <!-- Hero Section -->
+        <StackPanel HorizontalAlignment="Center" Margin="0,0,0,40">
+            <ui:SymbolIcon Symbol="Info24" FontSize="64" Margin="0,0,0,20"/>
+            <TextBlock Text="{Binding AppName}" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,5" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+            <TextBlock Text="{Binding AppVersion}" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+            <TextBlock Text="A powerful and modern account manager for Roblox." FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Contributors Section -->
+        <Grid Grid.Row="1" HorizontalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Developer Card -->
+            <ui:Card VerticalAlignment="Top" Padding="20">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                        <ui:SymbolIcon Symbol="Code24" FontSize="20" Margin="0,0,10,0"/>
+                        <TextBlock Text="Developer" FontSize="16" FontWeight="SemiBold"/>
+                    </StackPanel>
+                    
+                    <TextBlock Text="{Binding Developer}" FontSize="18" FontWeight="Bold" Margin="0,0,0,5" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <TextBlock Text="Project Lead &amp; Maintainer" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,20"/>
+
+                    <StackPanel>
+                        <ui:Button Content="GitHub" Icon="{ui:SymbolIcon Code24}" Command="{Binding OpenGitHubCommand}" HorizontalAlignment="Stretch" Appearance="Secondary"/>
+                        <ui:Button Content="Telegram" Icon="{ui:SymbolIcon Send24}" Command="{Binding OpenTelegramCommand}" HorizontalAlignment="Stretch" Appearance="Secondary" Margin="0,10,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </ui:Card>
+
+            <!-- Credits Card -->
+            <ui:Card Grid.Column="2" VerticalAlignment="Top" Padding="20">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                        <ui:SymbolIcon Symbol="Person24" FontSize="20" Margin="0,0,10,0"/>
+                        <TextBlock Text="Credits" FontSize="16" FontWeight="SemiBold"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Weao" FontSize="18" FontWeight="Bold" Margin="0,0,0,5" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <TextBlock Text="Executor Information API" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,15"/>
+
+                    <ui:Button Content="Discord" Icon="{ui:SymbolIcon Chat24}" Command="{Binding OpenDiscordCommand}" HorizontalAlignment="Stretch" Appearance="Secondary" Margin="0,0,0,15"/>
+
+                    <Rectangle Height="1" Fill="{DynamicResource CardStrokeColorDefaultBrush}" Margin="0,0,0,15"/>
+
+                    <TextBlock Text="Libraries &amp; Packages" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,10" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    
+                    <StackPanel Margin="0,0,0,5">
+                         <TextBlock Text="• CommunityToolkit.Mvvm" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2"/>
+                         <TextBlock Text="• Microsoft.Extensions.DependencyInjection" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2"/>
+                         <TextBlock Text="• Microsoft.Web.WebView2" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2"/>
+                         <TextBlock Text="• System.Management" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2"/>
+                         <TextBlock Text="• System.Security.Cryptography.ProtectedData" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2"/>
+                         <TextBlock Text="• WPF-UI" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2"/>
+                    </StackPanel>
+
+                    <ui:Button Content="WPF UI GitHub" Icon="{ui:SymbolIcon Code24}" Command="{Binding OpenWpfUiCommand}" HorizontalAlignment="Stretch" Appearance="Secondary" Margin="0,10,0,0"/>
+                </StackPanel>
+            </ui:Card>
+        </Grid>
+
+        <!-- Footer -->
+        <TextBlock Grid.Row="3" Text="© 2026 Galkurta. All rights reserved." FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" Margin="0,20,0,0"/>
+    </Grid>
+</Page>

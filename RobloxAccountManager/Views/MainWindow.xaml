@@ -1,0 +1,55 @@
+<ui:FluentWindow x:Class="RobloxAccountManager.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:RobloxAccountManager.ViewModels"
+        xmlns:v="clr-namespace:RobloxAccountManager.Views"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        mc:Ignorable="d"
+        Title="Roblox Account Manager" Height="700" Width="1000"
+        WindowStartupLocation="CenterScreen"
+        ExtendsContentIntoTitleBar="True"
+        WindowBackdropType="Mica"
+        WindowCornerPreference="Round">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <ui:TitleBar Title="Roblox Account Manager" Grid.Row="0"/>
+
+        <ui:NavigationView Grid.Row="1" PaneDisplayMode="Top" IsBackButtonVisible="Collapsed" IsPaneToggleVisible="False"
+                           ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                           ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                           Background="{DynamicResource ApplicationBackgroundBrush}"
+                           x:Name="RootNavigation">
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem Content="Accounts" Icon="{ui:SymbolIcon Person24}" TargetPageType="{x:Type v:AccountsPage}" />
+                <ui:NavigationViewItem Content="Launch Selected" Icon="{ui:SymbolIcon Play24}" Command="{Binding LaunchSelectedCommand}" />
+                <ui:NavigationViewItem Content="Add Friend" Icon="{ui:SymbolIcon PersonAdd24}" TargetPageType="{x:Type v:AddFriendPage}" />
+                <ui:NavigationViewItem Content="Auto Join" Icon="{ui:SymbolIcon ArrowRepeatAll24}" TargetPageType="{x:Type v:AutoJoinPage}" />
+                <ui:NavigationViewItem Content="Browser" Icon="{ui:SymbolIcon Globe24}" TargetPageType="{x:Type v:BrowserPage}" />
+                <ui:NavigationViewItem Content="Active Clients" Icon="{ui:SymbolIcon Desktop24}" TargetPageType="{x:Type v:ActiveClientsPage}" />
+                <ui:NavigationViewItem Content="Exploits" Icon="{ui:SymbolIcon Games24}" TargetPageType="{x:Type v:ExploitsPage}" />
+                <ui:NavigationViewItem Content="Versions" Icon="{ui:SymbolIcon ArrowDownload24}" TargetPageType="{x:Type v:VersionsPage}" />
+            </ui:NavigationView.MenuItems>
+            
+            <ui:NavigationView.FooterMenuItems>
+                <ui:NavigationViewItem Content="Logs" Icon="{ui:SymbolIcon DocumentOnePage24}" TargetPageType="{x:Type v:LogsPage}" />
+                <ui:NavigationViewItem Content="Settings" Icon="{ui:SymbolIcon Settings24}" TargetPageType="{x:Type v:SettingsPage}" />
+                <ui:NavigationViewItem Content="About" Icon="{ui:SymbolIcon Info24}" TargetPageType="{x:Type v:AboutPage}" />
+            </ui:NavigationView.FooterMenuItems>
+
+            <ui:NavigationView.ContentOverlay>
+                <Grid>
+                    <ui:SnackbarPresenter x:Name="SnackbarPresenter" />
+                </Grid>
+            </ui:NavigationView.ContentOverlay>
+        </ui:NavigationView>
+
+        <ui:ContentDialogHost x:Name="RootContentDialog" Grid.Row="0" Grid.RowSpan="2"/>
+    </Grid>
+</ui:FluentWindow>

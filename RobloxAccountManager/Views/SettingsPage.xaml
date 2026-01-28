@@ -1,0 +1,78 @@
+<Page x:Class="RobloxAccountManager.Views.SettingsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:vm="clr-namespace:RobloxAccountManager.ViewModels"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Settings" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+
+        <ui:Card Grid.Row="1" VerticalAlignment="Top" Padding="20">
+            <StackPanel>
+                <!-- Custom Roblox Path -->
+                <TextBlock Text="Custom Roblox Versions Path (Fishstrap/Bloxstrap)" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBox Text="{Binding CustomRobloxPath, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="C:\Users\...\AppData\Local\Bloxstrap"/>
+                    <ui:Button Grid.Column="1" Content="Browse" Command="{Binding BrowseCustomPathCommand}" Icon="{ui:SymbolIcon Folder24}" Appearance="Secondary" Margin="10,0,0,0"/>
+                </Grid>
+
+                <!-- Download Path -->
+                <TextBlock Text="Download Location" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBox Text="{Binding DownloadPath, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Select download folder..."/>
+                    <ui:Button Grid.Column="1" Content="Browse" Command="{Binding BrowseDownloadPathCommand}" Icon="{ui:SymbolIcon Folder24}" Appearance="Secondary" Margin="10,0,0,0"/>
+                </Grid>
+
+                <!-- Executor Settings -->
+                <TextBlock Text="Executor Integration" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,8" FontSize="16" FontWeight="SemiBold"/>
+                
+                <TextBlock Text="Executor Path" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBox Text="{Binding ExecutorPath, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Select your executor (e.g., Synapse.exe, Krampus.exe)"/>
+                    <ui:Button Grid.Column="1" Content="Browse" Command="{Binding BrowseExecutorPathCommand}" Icon="{ui:SymbolIcon Search24}" Appearance="Secondary" Margin="10,0,0,0"/>
+                </Grid>
+
+                <ui:ToggleSwitch IsChecked="{Binding AutoLaunchExecutor, UpdateSourceTrigger=PropertyChanged}" 
+                                Content="Auto-Launch Executor with Roblox"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,20"/>
+
+                <!-- Auto-Rejoin Settings -->
+                <TextBlock Text="Auto-Rejoin Configuration" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,8" FontSize="16" FontWeight="SemiBold"/>
+                
+                <TextBlock Text="Rejoing Delay (Seconds)" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Slider Minimum="5" Maximum="60" TickFrequency="1" IsSnapToTickEnabled="True" 
+                            Value="{Binding AutoRejoinDelaySeconds, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Grid.Column="1" Text="{Binding AutoRejoinDelaySeconds}" VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Center" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                </Grid>
+                
+            </StackPanel>
+        </ui:Card>
+    </Grid>
+</Page>

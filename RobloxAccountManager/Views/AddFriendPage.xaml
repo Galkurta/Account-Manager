@@ -1,0 +1,96 @@
+<Page x:Class="RobloxAccountManager.Views.AddFriendPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             mc:Ignorable="d" 
+             d:DesignHeight="500" d:DesignWidth="800">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Header -->
+            <RowDefinition Height="Auto"/> <!-- Input Area -->
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+            <ui:Button Icon="{ui:SymbolIcon ArrowLeft24}" Command="{Binding NavigateBackCommand}" Appearance="Secondary" Margin="0,0,15,0"/>
+            <TextBlock Text="Add Friend" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+        </StackPanel>
+
+        <!-- Input & Results Card -->
+        <ui:Card Grid.Row="1" Margin="0,0,0,20">
+            <StackPanel>
+                <TextBlock Text="Who do you want to add?" FontSize="16" FontWeight="Medium" Margin="0,0,0,10" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                <TextBlock Text="Search for a user by Username or ID." 
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,15"/>
+
+                <!-- Search Box -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ui:TextBox Text="{Binding TargetInput, UpdateSourceTrigger=PropertyChanged}" 
+                             PlaceholderText="e.g. Roblox" Margin="0,0,10,0" FocusVisualStyle="{x:Null}"
+                             IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                        <ui:TextBox.InputBindings>
+                             <KeyBinding Key="Return" Command="{Binding SearchUserCommand}"/>
+                        </ui:TextBox.InputBindings>
+                    </ui:TextBox>
+
+                    <ui:Button Grid.Column="1" Command="{Binding SearchUserCommand}" 
+                            Content="Search" Icon="{ui:SymbolIcon Search24}" Appearance="Secondary" FocusVisualStyle="{x:Null}"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
+                </Grid>
+
+                <!-- Profile Preview (Visible when TargetUserFound) -->
+                <Grid Visibility="{Binding HasTargetUser, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Avatar -->
+                            <Border Grid.Column="0" Width="60" Height="60" CornerRadius="30" Margin="0,0,15,0">
+                                <Border.Background>
+                                    <ImageBrush ImageSource="{Binding TargetUser.AvatarUrl}" Stretch="UniformToFill"/>
+                                </Border.Background>
+                            </Border>
+
+                            <!-- User Info -->
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding TargetUser.DisplayName}" FontWeight="Bold" FontSize="16"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,2,0,5">
+                                    <TextBlock Text="@" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding TargetUser.Name}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text=" • ID: " Foreground="{DynamicResource TextFillColorTerTiaryBrush}"/>
+                                    <TextBlock Text="{Binding TargetUser.Id}" Foreground="{DynamicResource TextFillColorTerTiaryBrush}"/>
+                                </StackPanel>
+                                
+                                <!-- Presence Status -->
+                                <Border Background="{Binding TargetUser.PresenceColor}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding TargetUser.PresenceText}" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Add Button -->
+                            <ui:Button Grid.Column="2" Command="{Binding SendRequestsCommand}" 
+                                    Content="Send Requests" Icon="{ui:SymbolIcon PersonAdd24}" Appearance="Primary" FocusVisualStyle="{x:Null}"
+                                    VerticalAlignment="Center" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+                
+                <ProgressBar IsIndeterminate="True" Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,15,0,0"/>
+            </StackPanel>
+        </ui:Card>
+
+
+    </Grid>
+</Page>

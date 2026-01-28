@@ -1,0 +1,57 @@
+name: Build & Release
+
+on:
+  push:
+    branches: ["main"]
+    tags:
+      - "v*"
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore "RobloxAccountManager/RobloxAccountManager.csproj"
+
+      - name: Publish
+        run: dotnet publish "RobloxAccountManager/RobloxAccountManager.csproj" -c Release -r win-x64 --self-contained false -o ./publish
+
+      - name: Install Inno Setup
+        run: choco install innosetup
+
+      - name: Build Installer
+        run: |
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup.iss
+        shell: cmd
+
+      - name: Zip Portable
+        run: Compress-Archive -Path ./publish/* -DestinationPath ./RobloxAccountManager_Portable.zip
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build_Assets
+          path: |
+            Installer/RobloxAccountManager_Setup.exe
+            RobloxAccountManager_Portable.zip
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            Installer/RobloxAccountManager_Setup.exe
+            RobloxAccountManager_Portable.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

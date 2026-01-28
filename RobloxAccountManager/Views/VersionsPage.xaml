@@ -1,0 +1,88 @@
+<Page x:Class="RobloxAccountManager.Views.VersionsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:vm="clr-namespace:RobloxAccountManager.ViewModels"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Roblox Version Manager" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+
+        <!-- Version List -->
+        <ui:Card Grid.Row="1" VerticalAlignment="Top" Padding="20">
+            <StackPanel Grid.IsSharedSizeScope="True">
+                
+                <!-- Installed -->
+                <Grid Margin="0,0,0,15">
+                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Installed Version:" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Grid.Column="1" Text="{Binding InstalledVersion}" Foreground="{DynamicResource SystemAccentColorBrush}" FontWeight="Bold" VerticalAlignment="Center" FontSize="16"/>
+                </Grid>
+
+                <Rectangle Height="1" Fill="{DynamicResource CardStrokeColorDefaultBrush}" Margin="0,0,0,15"/>
+
+                <!-- Current (Live) -->
+                <Grid Margin="0,0,0,10">
+                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Latest (Live):" Foreground="#28a745" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Grid.Column="1" Text="{Binding CurrentVersion}" VerticalAlignment="Center"/>
+                    <ui:Button Grid.Column="2" Content="Download" Command="{Binding OpenDownloadCommand}" CommandParameter="Current" Icon="{ui:SymbolIcon ArrowDownload24}" Appearance="Secondary"/>
+                </Grid>
+
+                <!-- Future -->
+                <Grid Margin="0,0,0,10">
+                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Future (Next):" Foreground="#17a2b8" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Grid.Column="1" Text="{Binding FutureVersion}" VerticalAlignment="Center"/>
+                    <ui:Button Grid.Column="2" Content="Download" Command="{Binding OpenDownloadCommand}" CommandParameter="Future" Icon="{ui:SymbolIcon ArrowDownload24}" Appearance="Secondary"/>
+                </Grid>
+
+                <!-- Past -->
+                <Grid>
+                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Past (Downgrade):" Foreground="#d63384" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Grid.Column="1" Text="{Binding PastVersion}" VerticalAlignment="Center"/>
+                    <ui:Button Grid.Column="2" Content="Download" Command="{Binding OpenDownloadCommand}" CommandParameter="Past" Icon="{ui:SymbolIcon ArrowDownload24}" Appearance="Secondary"/>
+                </Grid>
+                
+            </StackPanel>
+        </ui:Card>
+
+        <!-- Status & Actions -->
+        <Grid Grid.Row="2" Margin="0,15,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+            
+            <ui:Button Grid.Column="1" Content="Refresh" Command="{Binding RefreshCommand}" Icon="{ui:SymbolIcon ArrowSync24}" Width="100"/>
+        </Grid>
+    </Grid>
+</Page>

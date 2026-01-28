@@ -1,0 +1,60 @@
+<ui:ContentDialog x:Class="RobloxAccountManager.Views.LaunchOptionsContentDialog"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      mc:Ignorable="d" 
+      d:DesignHeight="300" d:DesignWidth="400"
+      Title="Launch Options"
+      Width="500"
+      VerticalAlignment="Center"
+      HorizontalAlignment="Center"
+      Background="{DynamicResource ApplicationBackgroundBrush}">
+
+    <Border Background="{DynamicResource ApplicationBackgroundBrush}" CornerRadius="8" Padding="20">
+        <Grid>
+            <!-- View 1: Configuration Form -->
+            <Grid x:Name="ConfigPanel">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="Game Join Configuration" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,20"/>
+
+                <StackPanel Grid.Row="1">
+                    <!-- Place ID -->
+                    <TextBlock Text="Place ID (Required)" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,5"/>
+                    <ui:TextBox x:Name="TxtPlaceId" PlaceholderText="123456789" Margin="0,0,0,15"/>
+
+                    <!-- Job ID / Link -->
+                    <TextBlock Text="Job ID (Optional)" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,5"/>
+                    <ui:TextBox x:Name="TxtJobId" PlaceholderText="UUID (e.g. 878348e4-...)" Margin="0,0,0,20"/>
+                </StackPanel>
+
+                <!-- Manual Footer Buttons -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <ui:Button x:Name="BtnBrowser" Content="Browser" Click="BtnBrowser_Click" Appearance="Secondary" Width="90" Margin="0,0,10,0" ToolTip="Browse Public Servers" Icon="{ui:SymbolIcon GlobeSearch24}"/>
+                    <ui:Button Content="Cancel" Click="BtnCancel_Click" Appearance="Secondary" Width="80" Margin="0,0,10,0"/>
+                    <ui:Button Content="Launch" Click="BtnLaunch_Click" Appearance="Primary" Width="100" Icon="{ui:SymbolIcon Rocket24}"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- View 2: Server Browser (Hidden by default) -->
+            <!-- We wrap it in a grid to ensure it takes space overlaying the config -->
+            <Grid x:Name="BrowserPanel" Visibility="Collapsed">
+                 <!-- 
+                    ServerBrowserView is usually large (850x600).
+                    If we show it here, the Dialog controls the size.
+                    We might need the dialog to resize? 
+                    ContentDialog usually autosizes to content if Width not fixed.
+                    I set Width="500" above. The Browser needs more width (850).
+                    I will bind the Dialog Width to a property or change it in code behind when switching views.
+                 -->
+                 <ContentControl x:Name="BrowserContainer"/>
+            </Grid>
+        </Grid>
+    </Border>
+</ui:ContentDialog>

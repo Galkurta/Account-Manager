@@ -1,0 +1,77 @@
+<Page x:Class="RobloxAccountManager.Views.AccountsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:vm="clr-namespace:RobloxAccountManager.ViewModels"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             mc:Ignorable="d" 
+             d:DesignHeight="500" d:DesignWidth="900">
+
+    <Grid Margin="20">
+        <!-- Account List -->
+        <ui:Card VerticalAlignment="Top" Padding="0">
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="Accounts" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,15"/>
+
+                <ListBox Grid.Row="1" ItemsSource="{Binding Accounts}" 
+                         Background="Transparent" BorderThickness="0" Margin="0,0,0,10"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,5" Background="Transparent" ToolTip="Right-click for more options">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/> <!-- Avatar -->
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/> <!-- Edit Action -->
+                                </Grid.ColumnDefinitions>
+                                
+                                <Grid.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="Account Details" Click="BtnEditAccount_Click"/>
+                                        <MenuItem Header="Delete Account" Click="BtnDeleteAccount_Click" Foreground="Red"/>
+                                    </ContextMenu>
+                                </Grid.ContextMenu>
+
+                                <CheckBox IsChecked="{Binding IsSelected}" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                                
+                                <Ellipse Grid.Column="1" Width="40" Height="40" Margin="0,0,15,0">
+                                    <Ellipse.Fill>
+                                        <ImageBrush ImageSource="{Binding AvatarUrl}"/>
+                                    </Ellipse.Fill>
+                                </Ellipse>
+                                
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Username}" FontSize="16" FontWeight="Medium">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="{Binding Username}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasAlias}" Value="True">
+                                                         <Setter Property="Text" Value="{Binding Alias}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding Username}" FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Visibility="{Binding HasAlias, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                </StackPanel>
+
+                                <ui:Button Grid.Column="3" Click="BtnEditAccount_Click" Icon="{ui:SymbolIcon Edit24}" Appearance="Transparent" VerticalAlignment="Center" ToolTip="Edit Account Details"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <ui:Button Grid.Row="2" Click="BtnAddAccount_Click" Content="Add Account" Icon="{ui:SymbolIcon Add24}" Appearance="Secondary" HorizontalAlignment="Stretch"/>
+            </Grid>
+        </ui:Card>
+    </Grid>
+</Page>

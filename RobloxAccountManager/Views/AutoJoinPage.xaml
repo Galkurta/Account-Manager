@@ -1,0 +1,80 @@
+<Page x:Class="RobloxAccountManager.Views.AutoJoinPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:vm="clr-namespace:RobloxAccountManager.ViewModels"
+      mc:Ignorable="d" 
+      d:DesignHeight="600" d:DesignWidth="800"
+      Title="Auto Join">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Auto Rejoiner" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+        
+        <!-- Account List -->
+        <ui:Card Grid.Row="1" VerticalAlignment="Top">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <TextBlock Text="Select Accounts to Auto-Rejoin" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,10"/>
+                
+                <ListView Grid.Row="1" ItemsSource="{Binding AccountItems}" SelectionMode="Single" Background="Transparent" BorderThickness="0">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                             <Setter Property="Focusable" Value="False"/>
+                             <Setter Property="IsHitTestVisible" Value="True"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/> <!-- Avatar -->
+                                    <ColumnDefinition Width="*"/>    <!-- Name -->
+                                    <ColumnDefinition Width="Auto"/> <!-- Status -->
+                                    <ColumnDefinition Width="Auto"/> <!-- Toggle -->
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Avatar -->
+                                <Border Width="32" Height="32" CornerRadius="16" Margin="0,0,10,0" Background="#33FFFFFF">
+                                    <Border.Effect>
+                                        <DropShadowEffect ShadowDepth="1" BlurRadius="5" Opacity="0.2"/>
+                                    </Border.Effect>
+                                    <Image Source="{Binding Account.AvatarUrl, TargetNullValue=http://www.roblox.com/images/default_avatar.jpg}" Stretch="UniformToFill">
+                                        <Image.Clip>
+                                            <EllipseGeometry Center="16,16" RadiusX="16" RadiusY="16"/>
+                                        </Image.Clip>
+                                    </Image>
+                                </Border>
+
+                                <!-- Name -->
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Account.DisplayName}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding Account.Username}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+
+                                <!-- Status -->
+                                <TextBlock Grid.Column="2" Text="{Binding Status}" 
+                                           VerticalAlignment="Center" Margin="0,0,20,0"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontStyle="Italic"/>
+
+                                <!-- Toggle -->
+                                <ui:ToggleSwitch Grid.Column="3" IsChecked="{Binding IsEnabled, Mode=TwoWay}" VerticalAlignment="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </ui:Card>
+    </Grid>
+</Page>
