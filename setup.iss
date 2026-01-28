@@ -130,6 +130,8 @@ begin
 end;
 
 function InitializeSetup(): Boolean;
+var
+  ErrorCode: Integer;
 begin
 
   if not IsDotNet8DesktopInstalled() then
