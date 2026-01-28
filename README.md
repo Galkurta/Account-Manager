@@ -27,7 +27,7 @@ A comprehensive, open-source tool for managing multiple Roblox accounts, auto-re
 
 ### Installation
 
-1. Download the latest release from the [Releases](https://github.com/YourRepo/RobloxAccountManager/releases) page.
+1. Download the latest release from the [Releases](https://github.com/Galkurta/Account-Manager/releases) page.
 2. Run the installer (`RobloxAccountManager_Setup.exe`) or extract the portable zip.
 3. Launch `RobloxAccountManager.exe`.
 
@@ -40,7 +40,7 @@ Requirements:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/YourRepo/RobloxAccountManager.git
+   git clone https://github.com/Galkurta/Account-Manager.git
    ```
 2. Open `RobloxAccountManager.sln` in Visual Studio.
 3. Restore NuGet packages.
