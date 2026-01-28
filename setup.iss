@@ -111,29 +111,43 @@ function IsDotNet8DesktopInstalled(): Boolean;
 var
   RegKey: string;
   Version: string;
+  FindRec: TFindRec;
 begin
   Result := False;
   RegKey := 'SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.WindowsDesktop.App';
   
+  // 1. Registry Check (Simple explicit checks for common base versions)
   if RegQueryStringValue(HKLM, RegKey, '8.0.0', Version) or 
      RegKeyExists(HKLM, RegKey + '\8.0.0') or
      RegKeyExists(HKLM, RegKey + '\8.0') then
   begin
     Result := True;
+    Exit;
   end;
   
-  if not Result then begin
-      Result := RegKeyExists(HKLM, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{7C7A6560-CD00-4786-9040-51543306B620}')
-             or DirExists(ExpandConstant('{pf64}\dotnet\shared\Microsoft.WindowsDesktop.App\8.0.0')); 
+  // 2. Registry Check for Uninstall key (Fallback)
+  if RegKeyExists(HKLM, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{7C7A6560-CD00-4786-9040-51543306B620}') then
+  begin
+      Result := True;
+      Exit;
   end;
-  
 
-  if not Result then
-    Result := DirExists(ExpandConstant('{pf64}\dotnet\shared\Microsoft.WindowsDesktop.App\8.0.0')) or
-              DirExists(ExpandConstant('{pf64}\dotnet\shared\Microsoft.WindowsDesktop.App\8.0.1')) or
-              DirExists(ExpandConstant('{pf64}\dotnet\shared\Microsoft.WindowsDesktop.App\8.0.2')) or
-              DirExists(ExpandConstant('{pf64}\dotnet\shared\Microsoft.WindowsDesktop.App\8.0.3')) or
-              DirExists(ExpandConstant('{pf64}\dotnet\shared\Microsoft.WindowsDesktop.App\8.0.4'));
+  // 3. Filesystem Check (Robust Wildcard Search for 8.0.*)
+  if FindFirst(ExpandConstant('{pf64}\dotnet\shared\Microsoft.WindowsDesktop.App\8.0.*'), FindRec) then begin
+    try
+      repeat
+        if (FindRec.Attributes and FILE_ATTRIBUTE_DIRECTORY) <> 0 then begin
+          if (FindRec.Name <> '.') and (FindRec.Name <> '..') then begin
+            // Found a folder starting with 8.0, assume installed
+            Result := True;
+            Break;
+          end;
+        end;
+      until not FindNext(FindRec);
+    finally
+      FindClose(FindRec);
+    end;
+  end;
 end;
 
 function InitializeSetup(): Boolean;
