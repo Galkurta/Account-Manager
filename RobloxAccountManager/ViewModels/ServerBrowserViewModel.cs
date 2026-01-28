@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using RobloxAccountManager.Services;
+using System.Linq;
+using System.Windows;
 
 namespace RobloxAccountManager.ViewModels
 {
@@ -46,6 +48,9 @@ namespace RobloxAccountManager.ViewModels
 
         [ObservableProperty] 
         private bool _hasGameDetails;
+
+        [ObservableProperty]
+        private bool _isPrivateServerMode;
 
         public ObservableCollection<RobloxServer> Servers { get; } = new ObservableCollection<RobloxServer>();
 
@@ -102,14 +107,43 @@ namespace RobloxAccountManager.ViewModels
             StatusMessage = "Fetching servers...";
             
 
-            var servers = await _gameService.GetPublicServers(pid);
-            
-            foreach (var s in servers)
+            if (IsPrivateServerMode)
             {
-                Servers.Add(s);
+                string? cookie = null;
+                // Try to get cookie from currently selected account in MainViewModel
+                if (System.Windows.Application.Current.MainWindow?.DataContext is MainViewModel mainVM)
+                {
+                    var selectedAccount = mainVM.Accounts.FirstOrDefault(a => a.IsSelected);
+                    if (selectedAccount != null)
+                    {
+                         var secService = new SecurityService(); 
+                         cookie = secService.Decrypt(selectedAccount.CookieCipher);
+                    }
+                }
+
+                if (string.IsNullOrEmpty(cookie))
+                {
+                    StatusMessage = "Authentication required (Select an account in main window).";
+                    IsLoading = false;
+                    return;
+                }
+
+                var privateServers = await _gameService.GetPrivateServers(pid, cookie);
+                foreach (var s in privateServers)
+                {
+                    Servers.Add(s);
+                }
+            }
+            else
+            {
+                var servers = await _gameService.GetPublicServers(pid);
+                foreach (var s in servers)
+                {
+                    Servers.Add(s);
+                }
             }
 
-            string resultMsg = servers.Count == 0 ? "No active servers found or API restricted." : $"Found {servers.Count} servers.";
+            string resultMsg = Servers.Count == 0 ? "No servers found." : $"Found {Servers.Count} servers.";
             StatusMessage = resultMsg;
             LogService.Log($"Browser: {resultMsg}");
             

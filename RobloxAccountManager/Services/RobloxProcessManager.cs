@@ -88,11 +88,11 @@ namespace RobloxAccountManager.Services
             return null;
         }
 
-        public async System.Threading.Tasks.Task<string> LaunchAccount(string cookie, long userId, string accountName, string? placeId = null, string? jobId = null)
+        public async System.Threading.Tasks.Task<string> LaunchAccount(string cookie, long userId, string accountName, string? placeId = null, string? jobId = null, string? accessCode = null)
         {
             try
             {
-                LogService.Log($"Preparing to launch account...");
+                LogService.Log($"Preparing to launch account {(accessCode != null ? "(Private Server)" : "")}...");
                 
 
                 string authTicket = "";
@@ -141,7 +141,13 @@ namespace RobloxAccountManager.Services
                 string placeLauncherUrl = "";
                 long actualPlaceId = placeId == null ? 1818 : long.Parse(placeId); // Default to Crossroads if null
 
-                if (!string.IsNullOrWhiteSpace(jobId))
+                if (!string.IsNullOrWhiteSpace(accessCode))
+                {
+                     // Private Server
+                     placeLauncherUrl = $"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&browserTrackerId={browserTrackerId}&placeId={actualPlaceId}&accessCode={accessCode}&linkCode={accessCode}&isPlayTogetherGame=false";
+                     LogService.Log($"Joining Private Server via AccessCode");
+                }
+                else if (!string.IsNullOrWhiteSpace(jobId))
                 {
                      // Specific Server (Job ID)
                      // Electron: request=RequestGameJob&browserTrackerId=...&placeId=...&gameId=...

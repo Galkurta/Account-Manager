@@ -190,7 +190,7 @@ namespace RobloxAccountManager.ViewModels
             Log("Accounts saved.");
         }
 
-        public async Task LaunchSelectedAsync(string? placeId, string? jobId)
+        public async Task LaunchSelectedAsync(string? placeId, string? jobId, string? accessCode = null)
         {
             var selectedAccounts = Accounts.Where(a => a.IsSelected).ToList();
             if (!selectedAccounts.Any())
@@ -214,7 +214,7 @@ namespace RobloxAccountManager.ViewModels
                 }
 
 
-                string result = await _processManager.LaunchAccount(cookie, account.UserId, account.Username, placeId, jobId);
+                string result = await _processManager.LaunchAccount(cookie, account.UserId, account.Username, placeId, jobId, accessCode);
                 Log($"[{account.Username}] Result: {result}");
 
                 await Task.Delay(1000); // Stagger launches slightly

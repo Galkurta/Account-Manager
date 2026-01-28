@@ -1,14 +1,14 @@
 
 
 #define MyAppName "Roblox Account Manager"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "Galkurta"
 #define MyAppURL "https://github.com/Galkurta/Account-Manager"
 #define MyAppExeName "RobloxAccountManager.exe"
 
 [Setup]
 
-AppId={{C6E66095-6834-4474-87E6-DBC48FF96C49}}
+AppId={{5B6A0D71-E574-4DDF-A0D9-60EEE73A43CD}}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 

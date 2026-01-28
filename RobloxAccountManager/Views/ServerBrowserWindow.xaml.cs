@@ -9,6 +9,7 @@ namespace RobloxAccountManager.Views
     {
         public string SelectedJobId { get; private set; } = string.Empty;
         public string SelectedPlaceId { get; private set; } = string.Empty;
+        public string SelectedAccessCode { get; private set; } = string.Empty;
 
         public ServerBrowserWindow(string initialPlaceId = "")
         {
@@ -24,6 +25,14 @@ namespace RobloxAccountManager.Views
             {
                 SelectedJobId = vm.SelectedServer.Id;
                 SelectedPlaceId = vm.PlaceId;
+                if (vm.SelectedServer is RobloxPrivateServer ps)
+                {
+                     SelectedAccessCode = ps.AccessCode ?? "";
+                }
+                else
+                {
+                     SelectedAccessCode = "";
+                }
                 DialogResult = true;
                 Close();
             }

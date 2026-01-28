@@ -26,7 +26,7 @@ namespace RobloxAccountManager.Views
 
                 if (dialog.Launched)
                 {
-                    await vm.LaunchSelectedAsync(dialog.PlaceId, dialog.JobId);
+                    await vm.LaunchSelectedAsync(dialog.PlaceId, dialog.JobId, dialog.AccessCode);
                 }
             }
         }

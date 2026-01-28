@@ -133,6 +133,57 @@ namespace RobloxAccountManager.Services
             }
             return new List<RobloxServer>();
         }
+
+        public async Task<List<RobloxPrivateServer>> GetPrivateServers(long placeId, string cookie, int limit = 50)
+        {
+            try
+            {
+                using var handler = new HttpClientHandler { CookieContainer = new System.Net.CookieContainer(), UseCookies = true };
+                handler.CookieContainer.Add(new System.Net.Cookie(".ROBLOSECURITY", cookie) { Domain = ".roblox.com" });
+                
+                using var client = new HttpClient(handler);
+                client.DefaultRequestHeaders.Add("User-Agent", "RobloxAccountManager/1.0");
+                client.DefaultRequestHeaders.Add("Referer", "https://www.roblox.com/");
+
+                string url = $"https://games.roblox.com/v1/games/{placeId}/private-servers?sortOrder=Asc&limit={limit}";
+                var response = await client.GetAsync(url);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    using (var doc = JsonDocument.Parse(json))
+                    {
+                        if (doc.RootElement.TryGetProperty("data", out var dataElement))
+                        {
+                            var servers = new List<RobloxPrivateServer>();
+                            foreach (var item in dataElement.EnumerateArray())
+                            {
+                                var server = new RobloxPrivateServer
+                                {
+                                    Id = item.GetProperty("vipServerId").GetInt64().ToString(), // VIP Server ID
+                                    Name = item.TryGetProperty("name", out var n) ? n.GetString() : "Private Server",
+                                    AccessCode = item.TryGetProperty("accessCode", out var ac) ? ac.GetString() : "",
+                                    OwnerName = item.GetProperty("owner").GetProperty("name").GetString()
+                                };
+                                
+                                servers.Add(server);
+                            }
+                            LogService.Log($"API: Fetched {servers.Count} private servers.");
+                            return servers;
+                        }
+                    }
+                }
+                else
+                {
+                     LogService.Error($"API: Failed to fetch private servers. Status: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.Error($"Error fetching private servers: {ex.Message}");
+            }
+            return new List<RobloxPrivateServer>();
+        }
     }
 
     public class RobloxGameDetail
@@ -154,6 +205,18 @@ namespace RobloxAccountManager.Services
         public int Ping { get; set; }
         public double Fps { get; set; }
         
-        public string PlayerCountDisplay => $"{Playing}/{MaxPlayers}";
+        public string? Name { get; set; }
+        public string? OwnerName { get; set; }
+
+        public virtual string PlayerCountDisplay => $"{Playing}/{MaxPlayers}";
+        public virtual string PingDisplay => Ping > 0 ? Ping.ToString() : "-";
+        public virtual string FpsDisplay => Fps > 0 ? Fps.ToString("N0") : "-";
+    }
+
+    public class RobloxPrivateServer : RobloxServer
+    {
+        public string? AccessCode { get; set; }
+        
+        public override string PlayerCountDisplay => "Private";
     }
 }

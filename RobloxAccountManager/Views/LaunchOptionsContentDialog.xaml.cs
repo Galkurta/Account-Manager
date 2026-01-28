@@ -9,6 +9,8 @@ namespace RobloxAccountManager.Views
         public string PlaceId { get; private set; } = string.Empty;
         public string JobId { get; private set; } = string.Empty;
 
+        public string AccessCode { get; private set; } = string.Empty;
+
         public bool Launched { get; private set; } = false;
 
         public LaunchOptionsContentDialog(ContentDialogHost presenter) : base(presenter)
@@ -19,7 +21,18 @@ namespace RobloxAccountManager.Views
         private void BtnLaunch_Click(object sender, RoutedEventArgs e)
         {
             PlaceId = TxtPlaceId.Text.Trim();
-            JobId = TxtJobId.Text.Trim();
+            
+            string currentJobInput = TxtJobId.Text.Trim();
+            if (!string.IsNullOrEmpty(AccessCode) && currentJobInput == "(Private Server Access Code)")
+            {
+                JobId = "";
+            }
+            else
+            {
+                JobId = currentJobInput;
+                AccessCode = ""; // User override
+            }
+            
             Launched = true;
             Hide(); 
         }
@@ -36,10 +49,21 @@ namespace RobloxAccountManager.Views
             
             var browserView = new ServerBrowserView();
             browserView.Initialize(currentPlaceId);
-            browserView.ServerSelected += (placeId, jobId) =>
+            browserView.ServerSelected += (placeId, jobId, accessCode) =>
             {
                 TxtPlaceId.Text = placeId;
-                TxtJobId.Text = jobId;
+                
+                if (!string.IsNullOrEmpty(accessCode))
+                {
+                     AccessCode = accessCode;
+                     TxtJobId.Text = "(Private Server Access Code)";
+                }
+                else
+                {
+                     AccessCode = "";
+                     TxtJobId.Text = jobId;
+                }
+                
                 // Switch back
                 SwitchToConfig();
             };

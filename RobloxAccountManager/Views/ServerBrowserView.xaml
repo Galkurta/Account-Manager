@@ -33,6 +33,8 @@
                 
                 <ui:Button Grid.Column="2" Command="{Binding FetchServersCommand}" Content="Refresh" Margin="10,0,0,0" Width="80" Icon="{ui:SymbolIcon ArrowSync24}"/>
                 
+                <CheckBox Grid.Column="3" Content="Private Servers (Auth Req.)" IsChecked="{Binding IsPrivateServerMode}" Margin="15,0,0,0" VerticalAlignment="Center"/>
+
                 <TextBlock Grid.Column="4" Text="{Binding StatusMessage}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
             </Grid>
         </ui:Card>
@@ -104,10 +106,12 @@
                   HeadersVisibility="Column" GridLinesVisibility="Horizontal" SelectionMode="Single">
             
             <ui:DataGrid.Columns>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="150"/>
+                <DataGridTextColumn Header="Owner" Binding="{Binding OwnerName}" Width="120"/>
                 <DataGridTextColumn Header="Players" Binding="{Binding PlayerCountDisplay}" Width="80"/>
-                <DataGridTextColumn Header="FPS" Binding="{Binding Fps, StringFormat=N0}" Width="60"/>
-                <DataGridTextColumn Header="Ping" Binding="{Binding Ping}" Width="60"/>
-                <DataGridTextColumn Header="Job ID (Server Instance)" Binding="{Binding Id}" Width="*"/>
+                <DataGridTextColumn Header="FPS" Binding="{Binding FpsDisplay}" Width="60"/>
+                <DataGridTextColumn Header="Ping" Binding="{Binding PingDisplay}" Width="60"/>
+                <DataGridTextColumn Header="Job ID / Link" Binding="{Binding Id}" Width="*"/>
             </ui:DataGrid.Columns>
         </ui:DataGrid>
 
