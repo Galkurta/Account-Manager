@@ -14,7 +14,8 @@ A comprehensive, open-source tool for managing multiple Roblox accounts, auto-re
 - **Integrated Browser**: Isolated WebView2 browser for each account to safely browse Roblox without cookie conflicts.
 - **Friend Manager**: Mass add friends or manage requests across accounts.
 - **Exploit Status**: Check the status of popular executors (updated dynamically).
-- **Version Manager**: Manage Roblox versions and Bloxstrap configurations.
+- **Version Manager**: Seamlessly manage, download, and auto-extract Roblox versions (e.g. for Fishstrap/Bloxstrap).
+- **RAM Monitoring**: Real-time memory usage monitoring for active Roblox clients.
 - **Modern UI**: Sleek, responsive Fluent Design interface using `Wpf.Ui`.
 
 ## 🚀 Getting Started

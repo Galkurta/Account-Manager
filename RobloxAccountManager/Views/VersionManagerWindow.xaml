@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:RobloxAccountManager.ViewModels"
         mc:Ignorable="d"
-        Title="Roblox Version Manager" Height="450" Width="600"
+        Title="Version Manager" Height="450" Width="600"
         Background="{StaticResource Brush.Background.Dark}"
         WindowStartupLocation="CenterOwner">
 
@@ -20,7 +20,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Roblox Version Manager" FontSize="20" FontWeight="Bold" Foreground="{StaticResource Brush.Text.Primary}" Margin="0,0,0,20"/>
+        <TextBlock Text="Version Manager" FontSize="20" FontWeight="Bold" Foreground="{StaticResource Brush.Text.Primary}" Margin="0,0,0,20"/>
 
         <!-- Version List -->
         <Border Grid.Row="1" Background="{StaticResource Brush.Surface.Dark}" CornerRadius="8" Padding="15">

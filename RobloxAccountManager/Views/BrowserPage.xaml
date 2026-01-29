@@ -16,7 +16,10 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Roblox Browser" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+            <ui:Button Icon="{ui:SymbolIcon ArrowLeft24}" Command="{Binding NavigateBackCommand}" Appearance="Secondary" Margin="0,0,15,0"/>
+            <TextBlock Text="Roblox Browser" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+        </StackPanel>
         
         <!-- Account List -->
         <ui:Card Grid.Row="1" VerticalAlignment="Top">

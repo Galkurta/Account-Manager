@@ -19,7 +19,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         
-        <ui:TitleBar Title="Roblox Account Manager" Grid.Row="0"/>
+        <ui:TitleBar x:Name="ApplicationTitleBar" Title="Roblox Account Manager" Grid.Row="0"/>
 
         <!-- Update Banner -->
         <Border Grid.Row="1" VerticalAlignment="Top" Background="{DynamicResource PaletteGreenBrush}" 
@@ -41,16 +41,14 @@
             </Grid>
         </Border>
 
-        <ui:NavigationView Grid.Row="1" PaneDisplayMode="Top" IsBackButtonVisible="Collapsed" IsPaneToggleVisible="False"
-                           ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                           ScrollViewer.VerticalScrollBarVisibility="Disabled"
+        <ui:NavigationView Grid.Row="1" PaneDisplayMode="Left" IsBackButtonVisible="Collapsed" IsPaneToggleVisible="True"
                            Background="{DynamicResource ApplicationBackgroundBrush}"
                            x:Name="RootNavigation">
             <ui:NavigationView.MenuItems>
                 <ui:NavigationViewItem Content="Accounts" Icon="{ui:SymbolIcon Person24}" TargetPageType="{x:Type v:AccountsPage}" />
                 <ui:NavigationViewItem Content="Launch Selected" Icon="{ui:SymbolIcon Play24}" Command="{Binding LaunchSelectedCommand}" />
                 <ui:NavigationViewItem Content="Add Friend" Icon="{ui:SymbolIcon PersonAdd24}" TargetPageType="{x:Type v:AddFriendPage}" />
-                <ui:NavigationViewItem Content="Auto Join" Icon="{ui:SymbolIcon ArrowRepeatAll24}" TargetPageType="{x:Type v:AutoJoinPage}" />
+                <ui:NavigationViewItem Content="Auto Rejoin" Icon="{ui:SymbolIcon ArrowRepeatAll24}" TargetPageType="{x:Type v:AutoJoinPage}" />
                 <ui:NavigationViewItem Content="Browser" Icon="{ui:SymbolIcon Globe24}" TargetPageType="{x:Type v:BrowserPage}" />
                 <ui:NavigationViewItem Content="Active Clients" Icon="{ui:SymbolIcon Desktop24}" TargetPageType="{x:Type v:ActiveClientsPage}" />
                 <ui:NavigationViewItem Content="Exploits" Icon="{ui:SymbolIcon Games24}" TargetPageType="{x:Type v:ExploitsPage}" />

@@ -35,33 +35,12 @@ namespace RobloxAccountManager.Services
             }
         }
 
-        public async Task<GithubRelease?> CheckForUpdatesAsync()
+        public async Task<GithubRelease?> CheckForUpdatesAsync(bool force = false)
         {
             try
             {
-                // Check if 24 hours have passed
-                /*
-                if (File.Exists(_lastCheckFilePath))
-                {
-                    string content = File.ReadAllText(_lastCheckFilePath);
-                    if (DateTime.TryParse(content, out DateTime lastCheck))
-                    {
-                        if ((DateTime.Now - lastCheck).TotalHours < 24)
-                        {
-                            return null; // Too soon
-                        }
-                    }
-                }
-                */
-                // For testing/development, we might want to skip the 24h check or make it configurable. 
-                // But per user request: "every 24 hours".
-                // However, usually "Check for updates" logic implies:
-                // 1. Check if we *should* check (timing).
-                // 2. If yes, check API.
-                // 3. If update found, return it.
-                
-                // Let's implement the check logic but allow forcing it if needed (not implemented yet).
-                if (ShouldSkipCheck()) return null;
+                // Let's implement the check logic but allow forcing it if needed.
+                if (!force && ShouldSkipCheck()) return null;
 
                 using HttpClient client = new HttpClient();
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("RobloxAccountManager");
@@ -71,7 +50,8 @@ namespace RobloxAccountManager.Services
 
                 if (release == null) return null;
 
-                // Save check time
+                // Save check time ONLY if not forced, or maybe always? 
+                // Let's save it always so we reset the 24h timer on manual check too.
                 File.WriteAllText(_lastCheckFilePath, DateTime.Now.ToString("o"));
 
                 // specific version parsing logic
@@ -146,7 +126,7 @@ namespace RobloxAccountManager.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Update install failed: {ex.Message}");
+                LogService.Error($"Update install failed: {ex.Message}", "Update");
                 // In a real app, we might want to notify the user of failure
             }
         }

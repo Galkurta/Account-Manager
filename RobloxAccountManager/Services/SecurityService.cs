@@ -28,9 +28,9 @@ namespace RobloxAccountManager.Services
                 byte[] cipherBytes = ProtectedData.Protect(plainBytes, Entropy, DataProtectionScope.CurrentUser);
                 return Convert.ToBase64String(cipherBytes);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log error
+                LogService.Error($"Encryption failed: {ex.Message}", "Security");
                 return string.Empty;
             }
         }
@@ -46,9 +46,9 @@ namespace RobloxAccountManager.Services
                 byte[] plainBytes = ProtectedData.Unprotect(cipherBytes, Entropy, DataProtectionScope.CurrentUser);
                 return Encoding.UTF8.GetString(plainBytes);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log error
+                LogService.Error($"Decryption failed: {ex.Message}", "Security");
                 return string.Empty;
             }
         }

@@ -16,8 +16,11 @@ namespace RobloxAccountManager.ViewModels
         [ObservableProperty]
         private ObservableCollection<BrowserAccountItem> _accountItems = new();
 
-        public BrowserViewModel(ObservableCollection<RobloxAccount> accounts, SecurityService securityService)
+        private readonly MainViewModel _mainViewModel;
+
+        public BrowserViewModel(MainViewModel main, ObservableCollection<RobloxAccount> accounts, SecurityService securityService)
         {
+            _mainViewModel = main;
             _securityService = securityService;
 
 
@@ -58,10 +61,17 @@ namespace RobloxAccountManager.ViewModels
 
             foreach (var item in selected)
             {
-
+                LogService.Log($"Opening browser for account: {item.Account.Username}", LogLevel.Info, "Browser");
                 var win = new BrowserWindow(item.Account, _securityService);
                 win.Show();
             }
+        }
+
+
+        [RelayCommand]
+        public void NavigateBack()
+        {
+            _mainViewModel.NavigateAccounts();
         }
     }
 

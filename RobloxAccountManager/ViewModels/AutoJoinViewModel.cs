@@ -24,8 +24,11 @@ namespace RobloxAccountManager.ViewModels
             set => _autoJoinService.AutoRejoinDelaySeconds = value;
         }
 
-        public AutoJoinViewModel(ObservableCollection<RobloxAccount> accounts, AutoJoinService autoJoinService, SecurityService securityService)
+        private readonly MainViewModel _mainViewModel;
+
+        public AutoJoinViewModel(MainViewModel main, ObservableCollection<RobloxAccount> accounts, AutoJoinService autoJoinService, SecurityService securityService)
         {
+            _mainViewModel = main;
             _autoJoinService = autoJoinService;
             _securityService = securityService;
             
@@ -89,17 +92,20 @@ namespace RobloxAccountManager.ViewModels
                         {
                              _autoJoinService.StartMonitoring(item.Account.UserId, cookie);
                              item.UpdateStatus("Monitoring");
+                             Services.LogService.Log($"Enabled AutoJoin for {item.Account.Username}", Services.LogLevel.Info, "AutoJoin");
                         }
                         else
                         {
                             item.IsEnabled = false; // Revert
                             item.UpdateStatus("Error: Cookie");
+                            Services.LogService.Error($"Failed to enable AutoJoin for {item.Account.Username}: Missing Cookie", "AutoJoin");
                         }
                     }
                     catch
                     {
                         item.IsEnabled = false;
                         item.UpdateStatus("Error: Decrypt");
+                        Services.LogService.Error($"Failed to enable AutoJoin for {item.Account.Username}: Decryption Failed", "AutoJoin");
                     }
                 }
                 else
@@ -107,8 +113,16 @@ namespace RobloxAccountManager.ViewModels
                     // Disable
                     _autoJoinService.StopMonitoring(item.Account.UserId);
                     item.UpdateStatus("Disabled");
+                    Services.LogService.Log($"Disabled AutoJoin for {item.Account.Username}", Services.LogLevel.Info, "AutoJoin");
                 }
             }
+        }
+
+
+        [RelayCommand]
+        public void NavigateBack()
+        {
+            _mainViewModel.NavigateAccounts();
         }
     }
 }

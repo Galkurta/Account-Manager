@@ -27,14 +27,14 @@ namespace RobloxAccountManager.Services
                     if (doc.RootElement.TryGetProperty("universeId", out var uId))
                     {
                         long uid = uId.GetInt64();
-                        LogService.Log($"API: Resolved Universe ID {uid} for Place {placeId}");
+                        LogService.Log($"Resolved Universe ID {uid} for Place {placeId}", LogLevel.Info, "API");
                         return uid;
                     }
                 }
             }
             catch (Exception ex)
             {
-                LogService.Error($"Error fetching Universe ID: {ex.Message}");
+                LogService.Error($"Error fetching Universe ID: {ex.Message}", "API");
             }
             return null;
         }
@@ -60,14 +60,14 @@ namespace RobloxAccountManager.Services
                             FavoritedCount = updated.GetProperty("favoritedCount").GetInt64(),
                             Likes = 0 
                         };
-                        LogService.Log($"API: Fetched details for game '{updated.GetProperty("name").GetString()}'");
+                        LogService.Log($"Fetched details for game '{updated.GetProperty("name").GetString()}'", LogLevel.Info, "API");
                         return newDetails;
                     }
                 }
             }
             catch (Exception ex)
             {
-                 LogService.Error($"Error fetching Game Details: {ex.Message}");
+                 LogService.Error($"Error fetching Game Details: {ex.Message}", "API");
             }
             return null;
         }
@@ -82,14 +82,14 @@ namespace RobloxAccountManager.Services
                 {
                     if (doc.RootElement.TryGetProperty("data", out var data) && data.GetArrayLength() > 0)
                     {
-                        LogService.Log($"API: Fetched game icon.");
+                        LogService.Log($"Fetched game icon.", LogLevel.Info, "API");
                         return data[0].GetProperty("imageUrl").GetString();
                     }
                 }
             }
             catch (Exception ex)
             {
-                LogService.Error($"Error fetching Game Icon: {ex.Message}");
+                LogService.Error($"Error fetching Game Icon: {ex.Message}", "API");
             }
             return null;
         }
@@ -121,7 +121,7 @@ namespace RobloxAccountManager.Services
                                 };
                                 servers.Add(server);
                             }
-                            LogService.Log($"API: Fetched {servers.Count} public servers.");
+                            LogService.Log($"Fetched {servers.Count} public servers.", LogLevel.Info, "API");
                             return servers;
                         }
                     }
@@ -129,7 +129,7 @@ namespace RobloxAccountManager.Services
             }
             catch (Exception ex)
             {
-                LogService.Error($"Error fetching servers: {ex.Message}");
+                LogService.Error($"Error fetching servers: {ex.Message}", "API");
             }
             return new List<RobloxServer>();
         }
@@ -168,19 +168,19 @@ namespace RobloxAccountManager.Services
                                 
                                 servers.Add(server);
                             }
-                            LogService.Log($"API: Fetched {servers.Count} private servers.");
+                            LogService.Log($"Fetched {servers.Count} private servers.", LogLevel.Info, "API");
                             return servers;
                         }
                     }
                 }
                 else
                 {
-                     LogService.Error($"API: Failed to fetch private servers. Status: {response.StatusCode}");
+                     LogService.Error($"Failed to fetch private servers. Status: {response.StatusCode}", "API");
                 }
             }
             catch (Exception ex)
             {
-                LogService.Error($"Error fetching private servers: {ex.Message}");
+                LogService.Error($"Error fetching private servers: {ex.Message}", "API");
             }
             return new List<RobloxPrivateServer>();
         }

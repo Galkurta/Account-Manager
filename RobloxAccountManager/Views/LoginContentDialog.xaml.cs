@@ -60,6 +60,9 @@ namespace RobloxAccountManager.Views
                     
                     // CoreWebView2Cookie.Expires is DateTime in this wrapper
                     ScrapedCookieExpiration = authCookie.Expires;
+
+                    Services.LogService.Log("Successfully scraped .ROBLOSECURITY cookie. Closing dialog...", Services.LogLevel.Success, "Login");
+                    Hide();
                     
 
                 }

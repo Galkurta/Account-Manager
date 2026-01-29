@@ -15,6 +15,9 @@ namespace RobloxAccountManager.Models
         private long _userId;
 
         [ObservableProperty]
+        private string? _avatarUrl;
+
+        [ObservableProperty]
         private DateTime _launchTime;
 
         [ObservableProperty]
@@ -40,6 +43,9 @@ namespace RobloxAccountManager.Models
 
         [ObservableProperty]
         private double _freeRamMb;
+
+        [ObservableProperty]
+        private string? _serverType;
 
         // Helper to kill the process
         public void Kill()

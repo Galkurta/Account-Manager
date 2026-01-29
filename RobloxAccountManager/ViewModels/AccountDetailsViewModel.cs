@@ -19,6 +19,12 @@ namespace RobloxAccountManager.ViewModels
         private string _descriptionEditBuffer = string.Empty;
 
         [ObservableProperty]
+        private string _groupEditBuffer = "Default";
+
+        [ObservableProperty]
+        private string _proxyEditBuffer = "";
+
+        [ObservableProperty]
         private string _username = "";
 
         [ObservableProperty]
@@ -43,6 +49,8 @@ namespace RobloxAccountManager.ViewModels
             AvatarUrl = account.AvatarUrl;
             AliasEditBuffer = account.Alias;
             DescriptionEditBuffer = account.Description;
+            GroupEditBuffer = account.Group;
+            ProxyEditBuffer = account.ProxyUrl ?? "";
             
             ExpirationText = account.ExpirationDate.HasValue 
                 ? account.ExpirationDate.Value.ToString("g") 
@@ -56,7 +64,11 @@ namespace RobloxAccountManager.ViewModels
             {
                 SelectedAccount.Alias = AliasEditBuffer;
                 SelectedAccount.Description = DescriptionEditBuffer;
+                SelectedAccount.Group = GroupEditBuffer;
+                SelectedAccount.ProxyUrl = ProxyEditBuffer;
                 _mainViewModel.SaveAccounts();
+                
+                Services.LogService.Log($"Updated account details for {SelectedAccount.Username}", Services.LogLevel.Info, "Account");
             }
             _mainViewModel.NavigateAccounts();
         }

@@ -1,7 +1,7 @@
 
 
 #define MyAppName "Roblox Account Manager"
-#define MyAppVersion "1.2.0"
+#define MyAppVersion "1.3.0"
 #define MyAppPublisher "Galkurta"
 #define MyAppURL "https://github.com/Galkurta/Account-Manager"
 #define MyAppExeName "RobloxAccountManager.exe"

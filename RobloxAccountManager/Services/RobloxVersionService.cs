@@ -34,12 +34,12 @@ namespace RobloxAccountManager.Services
         {
             try
             {
-                LogService.Log($"Fetching version info from: {url}");
+                LogService.Log($"Fetching version info from: {url}", LogLevel.Info, "Version");
                 var response = await _httpClient.GetStringAsync(url);
                 using (var doc = JsonDocument.Parse(response))
                 {
                     var root = doc.RootElement;
-                    LogService.Log($"Successfully fetched version data.");
+                    LogService.Log($"Successfully fetched version data.", LogLevel.Info, "Version");
                     return new RobloxVersionInfo
                     {
                         WindowsVersion = GetStringSafe(root, "Windows"),
@@ -55,7 +55,7 @@ namespace RobloxAccountManager.Services
             }
             catch (Exception ex)
             {
-                LogService.Error($"Error fetching version from {url}: {ex.Message}");
+                LogService.Error($"Error fetching version from {url}: {ex.Message}", "Version");
                 return null;
             }
         }

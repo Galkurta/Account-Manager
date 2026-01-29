@@ -18,15 +18,19 @@ namespace RobloxAccountManager.Services
         private const string ROBLOX_MUTEX_NAME = "ROBLOX_singletonMutex";
         
         public ObservableCollection<RobloxSession> ActiveSessions { get; } = new ObservableCollection<RobloxSession>();
-        private readonly RobloxRequestService _requestService = new RobloxRequestService();
+        private readonly RobloxRequestService _requestService;
+        private readonly DiscordWebhookService? _webhookService;
 
-        // Event to notify when a session gets a Job ID (UserId, PlaceId, JobId)
         public event Action<long, long, string>? SessionJobIdUpdated; 
         
         private readonly System.Threading.Timer _monitoringTimer;
+        private readonly SettingsService _settingsService;
 
-        public RobloxProcessManager()
+        public RobloxProcessManager(SettingsService settingsService, DiscordWebhookService? webhookService = null)
         {
+            _settingsService = settingsService;
+            _requestService = new RobloxRequestService();
+            _webhookService = webhookService;
             _monitoringTimer = new System.Threading.Timer(MonitorMemoryUsage, null, 1000, 1000);
         }
 
@@ -75,7 +79,17 @@ namespace RobloxAccountManager.Services
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                 // Log verbose/debug only or throttle? for now error is fine but might span.
+                 // Let's us Debug log level equivalent (warning maybe?) to avoid spamming "Success" log view.
+                 System.Diagnostics.Debug.WriteLine($"Memory Monitor Error: {ex.Message}");
+                 // Also LogService for visibility if severe
+                 if (!(ex is System.Threading.Tasks.TaskCanceledException))
+                 {
+                    LogService.Error($"Memory Monitor Error: {ex.Message}", "Process");
+                 }
+            }
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
@@ -161,33 +175,33 @@ namespace RobloxAccountManager.Services
             }
             catch (Exception ex)
             {
-                LogService.Error($"Failed to fetch user info: {ex.Message}");
+                LogService.Error($"Failed to fetch user info: {ex.Message}", "Process");
             }
             return null;
         }
 
-        public async System.Threading.Tasks.Task<string> LaunchAccount(string cookie, long userId, string accountName, string? placeId = null, string? jobId = null, string? accessCode = null)
+        public async System.Threading.Tasks.Task<string> LaunchAccount(string cookie, long userId, string accountName, string? avatarUrl, string? placeId = null, string? jobId = null, string? accessCode = null, string? proxyUrl = null)
         {
             try
             {
-                LogService.Log($"Preparing to launch account {(accessCode != null ? "(Private Server)" : "")}...");
+                LogService.Log($"Preparing to launch account {(accessCode != null ? "(Private Server)" : "")} {(proxyUrl != null ? "(With Proxy)" : "")}...", LogLevel.Info, "Process");
                 
 
                 string authTicket = "";
                 try 
                 {
-                    authTicket = await GetAuthenticationTicket(cookie);
+                    authTicket = await _requestService.GetAuthenticationTicket(cookie, proxyUrl);
                 }
                 catch (Exception authEx)
                 {
                     var msg = $"Auth Ticket Error: {authEx.Message}";
-                    LogService.Error(msg);
+                    LogService.Error(msg, "Process");
                     return msg;
                 }
 
                 if (string.IsNullOrEmpty(authTicket))
                 {
-                    LogService.Error("Failed to generate authentication ticket (Empty response).");
+                    LogService.Error("Failed to generate authentication ticket (Empty response).", "Process");
                     return "Failed to generate authentication ticket (Empty response).";
                 }
 
@@ -195,17 +209,17 @@ namespace RobloxAccountManager.Services
                 string? playerPath = GetLatestRobloxVersion();
                 if (string.IsNullOrEmpty(playerPath))
                 {
-                    LogService.Error("Roblox Player not found.");
+                    LogService.Error("Roblox Player not found.", "Process");
                     return "Roblox Player not found.";
                 }
                 
-                LogService.Log($"Found Roblox Player at: {playerPath}");
+                LogService.Log($"Found Roblox Player at: {playerPath}", LogLevel.Info, "Process");
                 
 
                 
 
                 await KillRobloxMutexSafe();
-                LogService.Log("Cleaned up mutexes (Safe Mode).");
+                LogService.Log("Cleaned up mutexes (Safe Mode).", LogLevel.Info, "Process");
 
 
                 long launchTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -223,21 +237,21 @@ namespace RobloxAccountManager.Services
                 {
                      // Private Server
                      placeLauncherUrl = $"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestPrivateGame&browserTrackerId={browserTrackerId}&placeId={actualPlaceId}&accessCode={accessCode}&linkCode={accessCode}&isPlayTogetherGame=false";
-                     LogService.Log($"Joining Private Server via AccessCode");
+                     LogService.Log($"Joining Private Server via AccessCode", LogLevel.Info, "Process");
                 }
                 else if (!string.IsNullOrWhiteSpace(jobId))
                 {
                      // Specific Server (Job ID)
                      // Electron: request=RequestGameJob&browserTrackerId=...&placeId=...&gameId=...
                      placeLauncherUrl = $"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGameJob&browserTrackerId={browserTrackerId}&placeId={actualPlaceId}&gameId={jobId}&isPlayTogetherGame=false";
-                     LogService.Log($"Joining via Job ID: {jobId}");
+                     LogService.Log($"Joining via Job ID: {jobId}", LogLevel.Info, "Process");
                 }
                 else
                 {
                      // Standard Game Join
                      // Electron: request=RequestGame&browserTrackerId=...&placeId=...
                      placeLauncherUrl = $"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame&browserTrackerId={browserTrackerId}&placeId={actualPlaceId}&isPlayTogetherGame=false";
-                     LogService.Log(placeId == null ? "Launching App (Hub)" : $"Joining Place: {placeId}");
+                     LogService.Log(placeId == null ? "Launching App (Hub)" : $"Joining Place: {placeId}", LogLevel.Info, "Process");
                 }
 
 
@@ -254,18 +268,18 @@ namespace RobloxAccountManager.Services
                     {
                         try
                         {
-                            LogService.Log($"[Executor] Auto-launching: {execName}...");
+                            LogService.Log($"Auto-launching: {execName}...", LogLevel.Info, "Executor");
                             Process.Start(new ProcessStartInfo(settings.ExecutorPath) { UseShellExecute = true, WorkingDirectory = Path.GetDirectoryName(settings.ExecutorPath) });
                             await System.Threading.Tasks.Task.Delay(2000); // Give it a moment to initialize
                         }
                         catch (Exception ex)
                         {
-                             LogService.Error($"[Executor] Failed to launch: {ex.Message}");
+                             LogService.Error($"Failed to launch: {ex.Message}", "Executor");
                         }
                     }
                     else
                     {
-                         LogService.Log($"[Executor] {execName} is already running. Skipping launch.");
+                         LogService.Log($"{execName} is already running. Skipping launch.", LogLevel.Warning, "Executor");
                     }
                 }
 
@@ -273,9 +287,8 @@ namespace RobloxAccountManager.Services
                 // roblox-player:1+launchmode:play+gameinfo:${authTicket}+launchtime:${launchTime}+placelauncherurl:${encodedUrl}+browsertrackerid:${trackerId}+robloxLocale:en_us+gameLocale:en_us+channel:+LaunchExp:InApp
                 string protocolUrl = $"roblox-player:1+launchmode:play+gameinfo:{authTicket}+launchtime:{launchTime}+placelauncherurl:{encodedPlaceLauncherUrl}+browsertrackerid:{browserTrackerId}+robloxLocale:en_us+gameLocale:en_us+channel:+LaunchExp:InApp";
 
-                LogService.Log($"Launching Protocol URL (TrackerID: {browserTrackerId})");
+                LogService.Log($"Launching Protocol URL (TrackerID: {browserTrackerId})", LogLevel.Info, "Process");
 
-                // Launch using standard shell command
                 ProcessStartInfo startInfo = new ProcessStartInfo
                 {
                     FileName = "cmd",
@@ -284,20 +297,26 @@ namespace RobloxAccountManager.Services
                     CreateNoWindow = true
                 };
 
+                if (!string.IsNullOrEmpty(proxyUrl))
+                {
+                    // Attempt to pass proxy env vars
+                    // Note: 'start' command usually drops env vars unless we are careful, 
+                    // and 'cmd' env vars won't necessarily reach the protocol handler (Roblox)
+                    // if it is already running or managed by Explorer. 
+                    // But we set them anyway as best effort.
+                    startInfo.EnvironmentVariables["HTTP_PROXY"] = proxyUrl;
+                    startInfo.EnvironmentVariables["HTTPS_PROXY"] = proxyUrl;
+                    startInfo.EnvironmentVariables["ALL_PROXY"] = proxyUrl;
+                }
+
                 Process? ret = Process.Start(startInfo);
                 if (ret == null) 
                 {
-                    LogService.Error("Failed to start launch command.");
+                    LogService.Error("Failed to start launch command.", "Process");
+                    _webhookService?.SendNotificationAsync("Launch Failed", $"Failed to start process for **{accountName}**.", 16711680, accountName, userId, placeId, null, avatarUrl); // Red
                     return "Failed to start launch command.";
                 }
 
-                // Start async tracking of the real process
-                // We need the account name. The signature only has cookie/userId. 
-                // We'll trust the ViewModel updates the list or we modify signature.
-                // For now, let's fetch user info again? No, expensive.
-                // Update Signature to accept AccountName? Or just use "Unknown".
-                // We'll pass "Loading..." and update it?
-                // Actually, let's just accept 'accountName' in LaunchAccount.
                 // Fetch Place/Map Name
                 string? placeName = null;
                 if (!string.IsNullOrEmpty(placeId) && long.TryParse(placeId, out long pid))
@@ -305,26 +324,35 @@ namespace RobloxAccountManager.Services
                     placeName = await _requestService.GetGameNameFromPlaceIdAsync(pid);
                 }
 
-                TrackLaunchedSession(browserTrackerId, userId, accountName, placeName, placeId, jobId); 
+                // Determine Server Type
+                string serverType = "Public Server";
+                if (!string.IsNullOrEmpty(accessCode)) serverType = "Private Server";
+                else if (!string.IsNullOrEmpty(jobId)) serverType = "Reserved/Job";
+
+                _webhookService?.SendNotificationAsync("Account Launched", $"Successfully launched **{accountName}**.", 65280, accountName, userId, placeId, jobId, avatarUrl, placeName, serverType); // Green
+
+                // Start async tracking of the real process
+                
+                TrackLaunchedSession(browserTrackerId, userId, accountName, avatarUrl, placeName, placeId, jobId, serverType); 
 
                 // Wait a moment for process initialization then clean again
                 await System.Threading.Tasks.Task.Delay(2000);
                 await KillRobloxMutexSafe();
-                LogService.Log("Post-launch mutex cleanup complete.");
+                LogService.Log("Post-launch mutex cleanup complete.", LogLevel.Info, "Process");
                 
                 return $"Launched via Protocol (TrackerID: {browserTrackerId})";
             }
             catch (Exception ex)
             {
-                LogService.Error($"Error launching: {ex.Message}");
+                LogService.Error($"Error launching: {ex.Message}", "Process");
                 return $"Error launching: {ex.Message}";
             }
         }
 
-        private async void TrackLaunchedSession(long browserTrackerId, long userId, string accountName, string? placeName, string? placeId, string? jobId)
+        private async void TrackLaunchedSession(long browserTrackerId, long userId, string accountName, string? avatarUrl, string? placeName, string? placeId, string? jobId, string? serverType)
         {
              // Wait for the actual RobloxPlayerBeta process to appear
-             LogService.Log($"Tracking session for {accountName} (ID: {browserTrackerId})...");
+             LogService.Log($"Tracking session for {accountName} (ID: {browserTrackerId})...", LogLevel.Info, "Process");
              
              int attempts = 0;
              while (attempts < 20) // Try for 20 seconds
@@ -350,11 +378,13 @@ namespace RobloxAccountManager.Services
                              UserId = userId,
                              LaunchTime = DateTime.Now,
                              BrowserTrackerId = browserTrackerId,
-                             LaunchMode = "Protocol",
-                             Status = "Running",
-                             PlaceId = placeId,
-                             JobId = jobId,
-                             PlaceName = placeName ?? "Unknown"
+                              LaunchMode = "Protocol",
+                              Status = "Running",
+                              PlaceId = placeId,
+                              JobId = jobId,
+                              PlaceName = placeName ?? "Unknown",
+                              AvatarUrl = avatarUrl,
+                              ServerType = serverType
                          };
 
                          // Hook exit
@@ -363,10 +393,14 @@ namespace RobloxAccountManager.Services
                          {
                              session.Status = "Closed";
                              System.Windows.Application.Current.Dispatcher.Invoke(() => ActiveSessions.Remove(session));
+
+                             // Trigger Webhook
+                             long.TryParse(session.PlaceId, out long pid);
+                             _webhookService?.SendNotificationAsync("Account Disconnected", $"**{session.AccountName}** closed session.", 16753920, session.AccountName, session.UserId, session.PlaceId, session.JobId, session.AvatarUrl, session.PlaceName, session.ServerType);
                          };
 
                          System.Windows.Application.Current.Dispatcher.Invoke(() => ActiveSessions.Add(session));
-                         LogService.Log($"Session Linked: PID {p.Id} -> {accountName}");
+                         LogService.Log($"Session Linked: PID {p.Id} -> {accountName}", LogLevel.Success, "Process");
                          
                          // Start reading logs to find JobId/PlaceName if missing
                          _ = Task.Run(() => MonitorLogFile(session));
@@ -375,7 +409,7 @@ namespace RobloxAccountManager.Services
                      }
                  }
              }
-             LogService.Log($"Starting session tracking failed for {accountName} (Process not found).");
+             LogService.Error($"Starting session tracking failed for {accountName} (Process not found).", "Process");
         }
 
         private async Task MonitorLogFile(RobloxSession session)
@@ -408,7 +442,7 @@ namespace RobloxAccountManager.Services
             }
 
             if (logFile == null) return;
-            LogService.Log($"[Monitor] Found Log: {logFile.Name} for Session {session.BrowserTrackerId}");
+            LogService.Log($"Found Log: {logFile.Name} for Session {session.BrowserTrackerId}", LogLevel.Info, "Monitor");
 
             // Monitor log
             try 
@@ -481,15 +515,17 @@ namespace RobloxAccountManager.Services
             }
             catch (Exception ex)
             {
-                 LogService.Error($"[Monitor] Error reading log: {ex.Message}");
+                 LogService.Error($"Error reading log: {ex.Message}", "Monitor");
             }
         }
+
+
 
         private void AssignJobId(RobloxSession session, string jid)
         {
              session.JobId = jid;
              session.Status = "In Game"; 
-             LogService.Log($"[Monitor] Found JobId: {jid}");
+             LogService.Log($"Found JobId: {jid}", LogLevel.Success, "Monitor");
 
              // Notify listeners (AutoJoinService)
              long.TryParse(session.PlaceId, out long pid);
@@ -509,7 +545,10 @@ namespace RobloxAccountManager.Services
                    }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogService.Error($"GetCommandLine Failed: {ex.Message}", "Process");
+            }
             return null;
         }
 
@@ -529,64 +568,15 @@ namespace RobloxAccountManager.Services
             }
         }
 
-        private async System.Threading.Tasks.Task<string> GetAuthenticationTicket(string cookie)
-        {
-            try
-            {
-                using (var client = new System.Net.Http.HttpClient())
-                {
-                    client.DefaultRequestHeaders.Add("Cookie", $".ROBLOSECURITY={cookie}");
-                    client.DefaultRequestHeaders.Add("User-Agent", "Roblox/WinInet");
-                    client.DefaultRequestHeaders.Add("Referer", "https://www.roblox.com/");
+        // Private GetAuthenticationTicket removed in favor of RobloxRequestService
 
-                    // Initially try to get CSRF
-                    // API requires Content-Type: application/json even if body is empty
-                    var content = new System.Net.Http.StringContent("{}", System.Text.Encoding.UTF8, "application/json");
-                    var response = await client.PostAsync("https://auth.roblox.com/v1/authentication-ticket", content);
-                    
-                    if (response.StatusCode == System.Net.HttpStatusCode.Forbidden && response.Headers.Contains("x-csrf-token"))
-                    {
-                        // Retry with CSRF
-                        string csrf = System.Linq.Enumerable.First(response.Headers.GetValues("x-csrf-token"));
-                        client.DefaultRequestHeaders.Remove("x-csrf-token"); // Ensure clean state
-                        client.DefaultRequestHeaders.Add("x-csrf-token", csrf);
-                        
-                        // Re-create content for the second request
-                        content = new System.Net.Http.StringContent("{}", System.Text.Encoding.UTF8, "application/json");
-                        response = await client.PostAsync("https://auth.roblox.com/v1/authentication-ticket", content);
-                    }
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string ticket = await response.Content.ReadAsStringAsync();
-                        // Roblox auth ticket is usually in the header 'rbx-authentication-ticket' for v1
-                        if (response.Headers.TryGetValues("rbx-authentication-ticket", out var values))
-                        {
-                            return System.Linq.Enumerable.First(values);
-                        }
-                        return ticket; // Fallback to body
-                    }
-                    else
-                    {
-                        // Return error detail
-                        string errorBody = await response.Content.ReadAsStringAsync();
-                        throw new Exception($"Auth Failed: {response.StatusCode} - {errorBody}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Request Error: {ex.Message}");
-            }
-        }
 
         private string? GetLatestRobloxVersion()
         {
             try
             {
                 // 1. Check Custom Path from Settings first
-                var settingsService = new SettingsService();
-                string customPath = settingsService.CurrentSettings.CustomRobloxPath;
+                string customPath = _settingsService.CurrentSettings.CustomRobloxPath;
 
                 if (!string.IsNullOrWhiteSpace(customPath) && System.IO.Directory.Exists(customPath))
                 {
@@ -611,8 +601,7 @@ namespace RobloxAccountManager.Services
                 var candidatePaths = new List<string>
                 {
                     System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Roblox", "Versions"),
-                    @"C:\Program Files (x86)\Roblox\Versions",
-                    @"D:\Roblox\Fishstrap\Versions"
+                    @"C:\Program Files (x86)\Roblox\Versions"
                 };
 
                 foreach (var versionsPath in candidatePaths)
@@ -651,6 +640,34 @@ namespace RobloxAccountManager.Services
                 }
             }
             return false;
+        }
+
+        public void CloseAccountSession(long userId)
+        {
+            try
+            {
+                var session = ActiveSessions.FirstOrDefault(s => s.UserId == userId);
+                if (session != null)
+                {
+                    try
+                    {
+                        var proc = Process.GetProcessById(session.ProcessId);
+                        proc.Kill();
+                        LogService.Log($"[ProcessManager] Killed process {session.ProcessId} for User {userId}");
+                    }
+                    catch (Exception ex)
+                    {
+                        LogService.Error($"[ProcessManager] Failed to kill process: {ex.Message}");
+                    }
+                    
+                    // Allow the Exited event to handle removal, or force it here if needed
+                    // But Exited event is safer.
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.Error($"[ProcessManager] Error closing session: {ex.Message}");
+            }
         }
 
         private List<NativeHelper.SYSTEM_HANDLE_INFORMATION> GetSystemHandles()

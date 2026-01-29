@@ -25,51 +25,66 @@ namespace RobloxAccountManager.ViewModels
         [ObservableProperty]
         private int _autoRejoinDelaySeconds;
 
-        public SettingsViewModel()
+        [ObservableProperty]
+        private string _discordWebhookUrl = "";
+
+        private readonly MainViewModel _mainViewModel;
+
+        public SettingsViewModel(MainViewModel main, SettingsService settingsService)
         {
-            _settingsService = new SettingsService();
+            _mainViewModel = main;
+            _settingsService = settingsService;
             _customRobloxPath = _settingsService.CurrentSettings.CustomRobloxPath ?? string.Empty;
             _downloadPath = _settingsService.CurrentSettings.DownloadPath ?? string.Empty;
             _executorPath = _settingsService.CurrentSettings.ExecutorPath ?? string.Empty;
             _autoLaunchExecutor = _settingsService.CurrentSettings.AutoLaunchExecutor;
             _autoRejoinDelaySeconds = _settingsService.CurrentSettings.AutoRejoinDelaySeconds;
+            _discordWebhookUrl = _settingsService.CurrentSettings.DiscordWebhookUrl ?? string.Empty;
 
             System.Diagnostics.Debug.WriteLine("[Settings] Opened Settings Menu");
+        }
+
+        partial void OnDiscordWebhookUrlChanged(string value)
+        {
+            _settingsService.CurrentSettings.DiscordWebhookUrl = value;
+            _settingsService.SaveSettings();
+            // Don't log full URL for privacy
+            LogService.Log("[Settings] Updated Discord Webhook URL", LogLevel.Info, "Settings");
         }
 
         partial void OnCustomRobloxPathChanged(string value)
         {
             _settingsService.CurrentSettings.CustomRobloxPath = value;
             _settingsService.SaveSettings();
-            System.Diagnostics.Debug.WriteLine($"[Settings] Updated Custom Roblox Path: {value}");
+            LogService.Log($"[Settings] Updated Custom Roblox Path: {value}", LogLevel.Info, "Settings");
         }
 
         partial void OnDownloadPathChanged(string value)
         {
             _settingsService.CurrentSettings.DownloadPath = value;
             _settingsService.SaveSettings();
-            System.Diagnostics.Debug.WriteLine($"[Settings] Updated Download Path: {value}");
+            LogService.Log($"[Settings] Updated Download Path: {value}", LogLevel.Info, "Settings");
         }
 
         partial void OnExecutorPathChanged(string value)
         {
             _settingsService.CurrentSettings.ExecutorPath = value;
             _settingsService.SaveSettings();
-            System.Diagnostics.Debug.WriteLine($"[Settings] Updated Executor Path: {value}");
+            LogService.Log($"[Settings] Updated Executor Path: {value}", LogLevel.Info, "Settings");
         }
 
         partial void OnAutoLaunchExecutorChanged(bool value)
         {
             _settingsService.CurrentSettings.AutoLaunchExecutor = value;
             _settingsService.SaveSettings();
-            System.Diagnostics.Debug.WriteLine($"[Settings] Updated Auto Launch Executor: {value}");
+            LogService.Log($"[Settings] Updated Auto Launch Executor: {value}", LogLevel.Info, "Settings");
         }
 
         partial void OnAutoRejoinDelaySecondsChanged(int value)
         {
             _settingsService.CurrentSettings.AutoRejoinDelaySeconds = value;
             _settingsService.SaveSettings();
-            System.Diagnostics.Debug.WriteLine($"[Settings] Updated Auto Rejoin Delay: {value}");
+            LogService.Log($"[Settings] Updated Auto Rejoin Delay: {value}", LogLevel.Info, "Settings");
         }
 
         [RelayCommand]
@@ -116,6 +131,13 @@ namespace RobloxAccountManager.ViewModels
             {
                 ExecutorPath = dialog.FileName;
             }
+        }
+
+
+        [RelayCommand]
+        public void NavigateBack()
+        {
+            _mainViewModel.NavigateAccounts();
         }
     }
 }

@@ -17,6 +17,12 @@ namespace RobloxAccountManager.Models
         private string _description = string.Empty; // User notes/description
 
         [ObservableProperty]
+        private string _group = "Default"; // Account Group (e.g. Main, Alt)
+
+        [ObservableProperty]
+        private string _proxyUrl = ""; // HTTP Proxy (e.g. http://user:pass@host:port)
+
+        [ObservableProperty]
         private string _displayName = string.Empty; // Roblox Display Name
 
         [ObservableProperty]

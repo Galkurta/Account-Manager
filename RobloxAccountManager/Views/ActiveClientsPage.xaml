@@ -13,7 +13,14 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Active Sessions" FontSize="20" FontWeight="SemiBold" Margin="24,24,0,16" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <StackPanel Orientation="Horizontal" Margin="24,24,24,16" VerticalAlignment="Center">
+            <ui:Button Icon="{ui:SymbolIcon ArrowLeft24}" Command="{Binding NavigateBackCommand}" Appearance="Secondary" Margin="0,0,15,0"/>
+            <TextBlock Text="Active Sessions" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,20,0"/>
+
+            <ui:Button Icon="{ui:SymbolIcon Grid24}" Command="{Binding TileWindowsCommand}" ToolTip="Tile Windows" Margin="0,0,8,0" Appearance="Secondary"/>
+            <ui:Button Icon="{ui:SymbolIcon CopySelect24}" Command="{Binding CascadeWindowsCommand}" ToolTip="Cascade Windows" Margin="0,0,8,0" Appearance="Secondary"/>
+            <ui:Button Icon="{ui:SymbolIcon Subtract24}" Command="{Binding MinimizeAllCommand}" ToolTip="Minimize All" Appearance="Secondary"/>
+        </StackPanel>
 
         <ui:Card Grid.Row="1" Padding="0" VerticalAlignment="Stretch" VerticalContentAlignment="Top">
             <ui:DataGrid ItemsSource="{Binding Sessions}" AutoGenerateColumns="False" 

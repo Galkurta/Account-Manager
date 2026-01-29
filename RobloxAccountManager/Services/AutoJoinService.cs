@@ -47,10 +47,13 @@ namespace RobloxAccountManager.Services
             }
         }
 
-        public AutoJoinService(RobloxRequestService requestService)
+        private readonly DiscordWebhookService? _webhookService;
+
+        public AutoJoinService(RobloxRequestService requestService, DiscordWebhookService? webhookService = null)
         {
             _requestService = requestService;
             _settingsService = new SettingsService();
+            _webhookService = webhookService;
         }
 
         public void StartMonitoring(long userId, string cookie)
@@ -175,12 +178,12 @@ namespace RobloxAccountManager.Services
                     // Disconnect detected: User was in-game but is now idle
                     if (session.LastGameId.HasValue)
                     {
-
                         if (session.PlaceId.HasValue)
                         {
                             Log($"[{session.UserId}] Disconnect detected! Rejoining in {_settingsService.CurrentSettings.AutoRejoinDelaySeconds}s...");
                             OnSessionStatusChanged?.Invoke(session.UserId, $"Waiting {_settingsService.CurrentSettings.AutoRejoinDelaySeconds}s...");
                             
+                            // Webhook handled by ProcessManager.Exited
 
                             await Task.Delay(_settingsService.CurrentSettings.AutoRejoinDelaySeconds * 1000, token);
                             
@@ -231,7 +234,7 @@ namespace RobloxAccountManager.Services
         private void Log(string message)
         {
             OnLog?.Invoke(message);
-            LogService.Log($"[AutoJoin] {message}"); 
+            LogService.Log(message, LogLevel.Info, "AutoJoin"); 
         }
     }
 }

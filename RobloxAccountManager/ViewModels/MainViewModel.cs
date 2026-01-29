@@ -20,11 +20,16 @@ namespace RobloxAccountManager.ViewModels
         [ObservableProperty]
         private string _logOutput = string.Empty;
 
+        [ObservableProperty]
+        private bool _isBusy;
+
         private readonly RobloxProcessManager _processManager;
         private readonly SecurityService _securityService;
         private readonly AccountStorageService _storageService;
         private readonly RobloxRequestService _requestService;
 
+
+        private readonly SettingsService _settingsService;
 
         public ExploitStatusViewModel ExploitsVM { get; }
         public VersionManagerViewModel VersionsVM { get; }
@@ -44,16 +49,19 @@ namespace RobloxAccountManager.ViewModels
         public MainViewModel()
         {
 
-            _processManager = new RobloxProcessManager();
+            _settingsService = new SettingsService(); // Instantiate Global Settings Service
+            var webhookService = new DiscordWebhookService(_settingsService); // Create Webhook Service
+            
+            _processManager = new RobloxProcessManager(_settingsService, webhookService); // Pass settings and webhook service
             _securityService = new SecurityService();
             _storageService = new AccountStorageService();
             _requestService = new RobloxRequestService();
             
 
-            ExploitsVM = new ExploitStatusViewModel();
-            VersionsVM = new VersionManagerViewModel();
-            SettingsVM = new SettingsViewModel();
-            var autoJoinService = new AutoJoinService(_requestService);
+            ExploitsVM = new ExploitStatusViewModel(this);
+            VersionsVM = new VersionManagerViewModel(this, _settingsService);
+            SettingsVM = new SettingsViewModel(this, _settingsService); // Pass existing settings service
+            var autoJoinService = new AutoJoinService(_requestService, webhookService); // Pass webhook service
 
             
 
@@ -79,8 +87,11 @@ namespace RobloxAccountManager.ViewModels
                     string cookie = _securityService.Decrypt(account.CookieCipher);
                     if (string.IsNullOrEmpty(cookie)) return;
                     
+                    // Kill existing process first to prevent duplicates
+                    _processManager.CloseAccountSession(account.UserId);
+                    await Task.Delay(1000); // Wait for close
 
-                    string result = await _processManager.LaunchAccount(cookie, account.UserId, account.Username, placeId, jobId);
+                    string result = await _processManager.LaunchAccount(cookie, account.UserId, account.Username, account.AvatarUrl, placeId, jobId, null, account.ProxyUrl);
                     Log($"[AutoJoin] Relaunch Result: {result}");
                 });
             };
@@ -93,11 +104,12 @@ namespace RobloxAccountManager.ViewModels
 
             AccountDetailsVM = new AccountDetailsViewModel(this);
             AddFriendVM = new AddFriendViewModel(this, _requestService, _securityService);
-            AutoJoinVM = new AutoJoinViewModel(Accounts, autoJoinService, _securityService);
-            BrowserVM = new BrowserViewModel(Accounts, _securityService);
-            ActiveClientsVM = new ActiveClientsViewModel(_processManager);
-            LogsVM = new LogsViewModel();
-            AboutVM = new AboutViewModel();
+            AutoJoinVM = new AutoJoinViewModel(this, Accounts, autoJoinService, _securityService);
+            BrowserVM = new BrowserViewModel(this, Accounts, _securityService);
+            ActiveClientsVM = new ActiveClientsViewModel(this, _processManager);
+            LogsVM = new LogsViewModel(this);
+            var updateService = new UpdateService();
+            AboutVM = new AboutViewModel(this, updateService);
             
             _statusMessage = "Ready";
             
@@ -223,6 +235,42 @@ namespace RobloxAccountManager.ViewModels
             Log("Accounts saved.");
         }
 
+        public async Task MoveAccountToGroupAsync(RobloxAccount account, string groupName)
+        {
+            IsBusy = true;
+            try
+            {
+                await Task.Delay(300); // Simulate work / prevent flicker
+                account.Group = groupName;
+                SaveAccounts();
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        public async Task DeleteGroupAsync(string groupName)
+        {
+            if (groupName == "Default") return;
+            IsBusy = true;
+            try
+            {
+                await Task.Delay(500); // Simulate processing
+                var accountsInGroup = Accounts.Where(a => a.Group == groupName).ToList();
+                foreach (var acc in accountsInGroup)
+                {
+                    acc.Group = "Default";
+                }
+                SaveAccounts();
+                Log($"Deleted group '{groupName}' and moved {accountsInGroup.Count} accounts to Default.");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
         public async Task LaunchSelectedAsync(string? placeId, string? jobId, string? accessCode = null)
         {
             var selectedAccounts = Accounts.Where(a => a.IsSelected).ToList();
@@ -232,28 +280,34 @@ namespace RobloxAccountManager.ViewModels
                 return;
             }
 
-            Log($"Launching {selectedAccounts.Count} account(s)...");
-
-            foreach (var account in selectedAccounts)
+            IsBusy = true;
+            try
             {
-                Log($"Preparing {account.Username}...");
-                
+                Log($"Launching {selectedAccounts.Count} account(s)...");
 
-                string cookie = _securityService.Decrypt(account.CookieCipher);
-                if (string.IsNullOrEmpty(cookie))
+                foreach (var account in selectedAccounts)
                 {
-                    Log($"[Error] Failed to decrypt cookie for {account.Username}");
-                    continue;
+                    Log($"Preparing {account.Username}...");
+                    
+                    string cookie = _securityService.Decrypt(account.CookieCipher);
+                    if (string.IsNullOrEmpty(cookie))
+                    {
+                        Log($"[Error] Failed to decrypt cookie for {account.Username}");
+                        continue;
+                    }
+
+                    string result = await _processManager.LaunchAccount(cookie, account.UserId, account.Username, account.AvatarUrl, placeId, jobId, accessCode, account.ProxyUrl);
+                    Log($"[{account.Username}] Result: {result}");
+
+                    await Task.Delay(1000); // Stagger launches slightly, also keeps UI busy longer per account
                 }
 
-
-                string result = await _processManager.LaunchAccount(cookie, account.UserId, account.Username, placeId, jobId, accessCode);
-                Log($"[{account.Username}] Result: {result}");
-
-                await Task.Delay(1000); // Stagger launches slightly
+                Log("Launch sequence completed.");
             }
-
-            Log("Launch sequence completed.");
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         [RelayCommand]

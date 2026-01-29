@@ -44,6 +44,12 @@
                      
                      <TextBlock Text="Alias (Nickname)" Margin="0,0,0,5"/>
                      <ui:TextBox Text="{Binding AliasEditBuffer, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Enter a custom name..." Margin="0,0,0,20"/>
+
+                     <TextBlock Text="Group" Margin="0,0,0,5"/>
+                     <ui:TextBox Text="{Binding GroupEditBuffer, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Main, Storage, etc." Margin="0,0,0,20"/>
+
+                     <TextBlock Text="HTTP Proxy" Margin="0,0,0,5"/>
+                     <ui:TextBox Text="{Binding ProxyEditBuffer, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="http://user:pass@host:port" Margin="0,0,0,20"/>
                      
                      <TextBlock Text="Description / Notes" Margin="0,0,0,5"/>
                      <ui:TextBox Text="{Binding DescriptionEditBuffer, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Add notes about this account..." Margin="0,0,0,20" Height="100" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top"/>

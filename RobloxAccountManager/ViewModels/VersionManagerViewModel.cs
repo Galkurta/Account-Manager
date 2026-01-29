@@ -39,10 +39,13 @@ namespace RobloxAccountManager.ViewModels
         // CustomPath is now a computed property from SettingsService
         public string CustomPath => _settingsService.CurrentSettings.CustomRobloxPath;
 
-        public VersionManagerViewModel()
+        private readonly MainViewModel _mainViewModel;
+
+        public VersionManagerViewModel(MainViewModel main, SettingsService settingsService)
         {
+            _mainViewModel = main;
             _versionService = new RobloxVersionService();
-            _settingsService = new SettingsService();
+            _settingsService = settingsService;
             
             // Initialize non-nullable fields to default values
             _installedVersion = "Searching...";
@@ -77,10 +80,12 @@ namespace RobloxAccountManager.ViewModels
                 PastVersion = past?.WindowsVersion ?? "Unknown";
 
                 StatusMessage = "Version data loaded.";
+                LogService.Log("Version data loaded.", LogLevel.Info, "Version");
             }
             catch (Exception ex)
             {
                 StatusMessage = $"Error: {ex.Message}";
+                LogService.Error($"Failed to load version data: {ex.Message}", "Version");
             }
             finally
             {
@@ -176,11 +181,18 @@ namespace RobloxAccountManager.ViewModels
                 
                 try
                 {
+                    LogService.Log($"Opening RDD browser for version: {version}", LogLevel.Info, "Version");
+                    
+                    string downloadPath = _settingsService.CurrentSettings.DownloadPath;
+                    string destinationPath = !string.IsNullOrEmpty(downloadPath) && Directory.Exists(downloadPath) 
+                                           ? downloadPath 
+                                           : CustomPath;
+
                     // Open in internal browser window (WebView2)
                     // Ensure UI thread access if needed, but RelayCommand usually runs on UI thread for button clicks.
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        var browser = new InternalBrowserWindow(url);
+                        var browser = new InternalBrowserWindow(url, destinationPath);
                         browser.Owner = Application.Current.Windows.OfType<Window>().SingleOrDefault(x => x.IsActive);
                         browser.Show();
                     });
@@ -190,12 +202,21 @@ namespace RobloxAccountManager.ViewModels
                 catch (Exception ex)
                 {
                     StatusMessage = $"Failed to open internal browser: {ex.Message}";
+                    LogService.Error($"Failed to open internal browser: {ex.Message}", "Version");
                 }
             }
             else
             {
                 StatusMessage = "Invalid version selected for download.";
             }
+
+
+        }
+
+        [RelayCommand]
+        public void NavigateBack()
+        {
+            _mainViewModel?.NavigateAccounts();
         }
     }
 }

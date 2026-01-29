@@ -18,5 +18,8 @@ namespace RobloxAccountManager.Models
 
         [JsonPropertyName("autoRejoinDelaySeconds")]
         public int AutoRejoinDelaySeconds { get; set; } = 15;
+
+        [JsonPropertyName("discordWebhookUrl")]
+        public string DiscordWebhookUrl { get; set; } = string.Empty;
     }
 }

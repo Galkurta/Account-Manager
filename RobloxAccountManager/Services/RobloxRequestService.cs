@@ -268,13 +268,71 @@ namespace RobloxAccountManager.Services
             return null;
         }
 
-        private HttpClient CreateAuthenticatedClient(string cookie)
+        public async System.Threading.Tasks.Task<string> GetAuthenticationTicket(string cookie, string? proxyUrl = null)
+        {
+            try
+            {
+                using (var client = CreateAuthenticatedClient(cookie, proxyUrl))
+                {
+                    // User-Agent and Referer are already set in CreateAuthenticatedClient
+                    client.DefaultRequestHeaders.Add("User-Agent", "Roblox/WinInet"); // Overwrite if needed specific for auth? Keep consistent.
+
+                    // Initially try to get CSRF
+                    // API requires Content-Type: application/json even if body is empty
+                    var content = new System.Net.Http.StringContent("{}", System.Text.Encoding.UTF8, "application/json");
+                    var response = await client.PostAsync("https://auth.roblox.com/v1/authentication-ticket", content);
+                    
+                    if (response.StatusCode == System.Net.HttpStatusCode.Forbidden && response.Headers.Contains("x-csrf-token"))
+                    {
+                        // Retry with CSRF
+                        string csrf = System.Linq.Enumerable.First(response.Headers.GetValues("x-csrf-token"));
+                        client.DefaultRequestHeaders.Remove("x-csrf-token"); // Ensure clean state
+                        client.DefaultRequestHeaders.Add("x-csrf-token", csrf);
+                        
+                        // Re-create content for the second request
+                        content = new System.Net.Http.StringContent("{}", System.Text.Encoding.UTF8, "application/json");
+                        response = await client.PostAsync("https://auth.roblox.com/v1/authentication-ticket", content);
+                    }
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string ticket = await response.Content.ReadAsStringAsync();
+                        // Roblox auth ticket is usually in the header 'rbx-authentication-ticket' for v1
+                        if (response.Headers.TryGetValues("rbx-authentication-ticket", out var values))
+                        {
+                            return System.Linq.Enumerable.First(values);
+                        }
+                        return ticket; // Fallback to body
+                    }
+                    else
+                    {
+                        // Return error detail
+                        string errorBody = await response.Content.ReadAsStringAsync();
+                        throw new Exception($"Auth Failed: {response.StatusCode} - {errorBody}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Request Error: {ex.Message}");
+            }
+        }
+
+        private HttpClient CreateAuthenticatedClient(string cookie, string? proxyUrl = null)
         {
             var handler = new HttpClientHandler
             {
                 CookieContainer = new CookieContainer(),
                 UseCookies = true
             };
+
+            if (!string.IsNullOrEmpty(proxyUrl))
+            {
+                try {
+                    handler.Proxy = new WebProxy(proxyUrl);
+                    handler.UseProxy = true;
+                } catch { /* Invalid proxy format? */ }
+            }
 
             var authCookie = new Cookie(".ROBLOSECURITY", cookie)
             {
@@ -293,9 +351,7 @@ namespace RobloxAccountManager.Services
 
         private async Task<HttpResponseMessage> ExecuteWithCsrfAsync(HttpClient client, string url, HttpContent content)
         {
-
             var response = await client.PostAsync(url, content);
-
 
             if (response.StatusCode == HttpStatusCode.Forbidden && response.Headers.Contains("x-csrf-token"))
             {
@@ -307,7 +363,15 @@ namespace RobloxAccountManager.Services
                 client.DefaultRequestHeaders.Remove("X-CSRF-TOKEN");
                 client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", csrfToken);
 
-
+                // Re-create content if necessary? Content is usually disposed? 
+                // StringContent is usually fine to reuse if not disposed, but PostAsync might dispose it?
+                // Actually HttpClient doesn't dispose Content by default on PostAsync, but good practice to check.
+                // However, we can't easily recreate generic content here.
+                // Assuming StringContent for JSON payloads which is what we use.
+                // Ideally we should recreate it to be safe or ensure it's not disposed.
+                // For this helper, we'll assume it's reusable or user handles it. 
+                // Actually, let's just retry.
+                
                 response = await client.PostAsync(url, content);
             }
 

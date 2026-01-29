@@ -67,14 +67,14 @@ namespace RobloxAccountManager.ViewModels
             if (string.IsNullOrWhiteSpace(PlaceId) || !long.TryParse(PlaceId, out long pid))
             {
                 StatusMessage = "Invalid Place ID.";
-                LogService.Error($"Browser: Invalid Place ID entered: {PlaceId}");
+                LogService.Error($"Invalid Place ID entered: {PlaceId}", "Browser");
                 HasGameDetails = false;
                 return;
             }
 
             IsLoading = true;
             StatusMessage = "Fetching game details...";
-            LogService.Log($"Browser: Fetching details for Place ID {pid}...");
+            LogService.Log($"Fetching details for Place ID {pid}...", LogLevel.Info, "Browser");
             Servers.Clear();
             HasGameDetails = false;
 
@@ -93,7 +93,7 @@ namespace RobloxAccountManager.ViewModels
                     VisitsCount = $"{details.Visits:N0} Visits";
                     LikesCount = $"{details.FavoritedCount:N0} Likes"; 
                     HasGameDetails = true;
-                    LogService.Log($"Browser: Found Game '{GameTitle}' (Univ: {universeId})");
+                    LogService.Log($"Found Game '{GameTitle}' (Univ: {universeId})", LogLevel.Info, "Browser");
                 }
 
 
@@ -101,7 +101,7 @@ namespace RobloxAccountManager.ViewModels
             }
             else
             {
-                 LogService.Error($"Browser: Could not resolve Universe ID for Place {pid}");
+                 LogService.Error($"Could not resolve Universe ID for Place {pid}", "Browser");
             }
 
             StatusMessage = "Fetching servers...";
@@ -145,7 +145,7 @@ namespace RobloxAccountManager.ViewModels
 
             string resultMsg = Servers.Count == 0 ? "No servers found." : $"Found {Servers.Count} servers.";
             StatusMessage = resultMsg;
-            LogService.Log($"Browser: {resultMsg}");
+            LogService.Log($"{resultMsg}", LogLevel.Info, "Browser");
             
             IsLoading = false;
         }

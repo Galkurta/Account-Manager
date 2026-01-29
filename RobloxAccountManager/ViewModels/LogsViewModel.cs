@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using RobloxAccountManager.Services;
 using System.Windows;
 
@@ -6,19 +7,17 @@ namespace RobloxAccountManager.ViewModels
 {
     public partial class LogsViewModel : ObservableObject
     {
-        [ObservableProperty]
-        private string _logOutput = "Ready.\n";
+        private readonly MainViewModel _mainViewModel;
 
-        public LogsViewModel()
+        public LogsViewModel(MainViewModel main)
         {
-             // Subscribe to global logs
-            LogService.OnLog += (msg) =>
-            {
-                Application.Current.Dispatcher.Invoke(() => 
-                {
-                    LogOutput += msg + "\n";
-                });
-            };
+            _mainViewModel = main;
+        }
+
+        [RelayCommand]
+        public void NavigateBack()
+        {
+            _mainViewModel?.NavigateAccounts();
         }
     }
 }

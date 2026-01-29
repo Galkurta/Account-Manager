@@ -4,28 +4,88 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:converters="clr-namespace:RobloxAccountManager.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <Page.Resources>
+        <converters:LogLevelToBrushConverter x:Key="LogLevelToBrushConverter"/>
+    </Page.Resources>
+
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Application Logs" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,15" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+            <TextBlock Text="Application Logs" Style="{StaticResource TitleTextBlockStyle}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+        </StackPanel>
 
-        <ui:Card Grid.Row="1" VerticalAlignment="Stretch" Padding="0">
-             <ui:TextBox 
-                     VerticalAlignment="Stretch"
-                     Text="{Binding LogOutput, Mode=OneWay}"
-                     IsReadOnly="True"
-                     VerticalScrollBarVisibility="Auto"
-                     TextWrapping="Wrap"
-                     BorderThickness="0"
-                     Background="Transparent"
-                     Padding="10"
-                     PlaceholderText="No logs yet..."
-                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-        </ui:Card>
+        <!-- Logs List -->
+        <Border Grid.Row="1" 
+                Background="{DynamicResource SolidBackgroundFillColorBaseBrush}" 
+                CornerRadius="8" 
+                BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
+                BorderThickness="1">
+            <ListView x:Name="LogListView"
+                      Background="Transparent"
+                      BorderThickness="0"
+                      Padding="10"
+                      Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="70"/> 
+                                <ColumnDefinition Width="75"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Time -->
+                            <TextBlock Grid.Column="0" 
+                                       Text="{Binding Time, StringFormat='HH:mm:ss'}" 
+                                       Foreground="Gray" 
+                                       FontFamily="Consolas"/>
+                            
+                            <!-- Level -->
+                            <TextBlock Grid.Column="1" 
+                                       Text="{Binding Level, StringFormat='[{0}]'}" 
+                                       Foreground="{Binding Level, Converter={StaticResource LogLevelToBrushConverter}}" 
+                                       FontWeight="Bold"
+                                       FontFamily="Consolas"/>
+                            
+                            <!-- Source -->
+                            <TextBlock Grid.Column="2" 
+                                       Text="{Binding Source, StringFormat='[{0}]'}" 
+                                       Foreground="Cyan" 
+                                       FontFamily="Consolas"/>
+                            
+                            <!-- Message -->
+                            <TextBlock Grid.Column="3" 
+                                       Text="{Binding Message}" 
+                                       Foreground="White" 
+                                       TextWrapping="Wrap"
+                                       FontFamily="Consolas"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Focusable" Value="False"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListViewItem">
+                                    <ContentPresenter/>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListView.ItemContainerStyle>
+            </ListView>
+        </Border>
     </Grid>
 </Page>
