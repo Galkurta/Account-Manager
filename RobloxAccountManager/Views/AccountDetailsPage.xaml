@@ -45,8 +45,8 @@
                      <TextBlock Text="Alias (Nickname)" Margin="0,0,0,5"/>
                      <ui:TextBox Text="{Binding AliasEditBuffer, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Enter a custom name..." Margin="0,0,0,20"/>
                      
-                     <TextBlock Text="Notes (Future)" Margin="0,0,0,5"/>
-                     <ui:TextBox PlaceholderText="Add notes about this account..." IsReadOnly="True" IsEnabled="False" Margin="0,0,0,20"/>
+                     <TextBlock Text="Description / Notes" Margin="0,0,0,5"/>
+                     <ui:TextBox Text="{Binding DescriptionEditBuffer, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Add notes about this account..." Margin="0,0,0,20" Height="100" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top"/>
 
                      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
                          <ui:Button Content="Cancel" Command="{Binding CancelAndBackCommand}" Appearance="Secondary" Margin="0,0,10,0" Width="100"/>

@@ -14,6 +14,9 @@ namespace RobloxAccountManager.Models
         public bool HasAlias => !string.IsNullOrEmpty(Alias);
 
         [ObservableProperty]
+        private string _description = string.Empty; // User notes/description
+
+        [ObservableProperty]
         private string _displayName = string.Empty; // Roblox Display Name
 
         [ObservableProperty]

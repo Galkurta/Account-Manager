@@ -52,6 +52,9 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
+                    <DataGridTextColumn Header="RAM Usage" Binding="{Binding RamUsageMb, StringFormat={}{0:N0} MB}" Width="100"/>
+                    <DataGridTextColumn Header="Free RAM" Binding="{Binding FreeRamMb, StringFormat={}{0:N0} MB}" Width="100"/>
+
                     <DataGridTemplateColumn Header="Actions" Width="100">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>

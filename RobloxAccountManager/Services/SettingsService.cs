@@ -15,7 +15,34 @@ namespace RobloxAccountManager.Services
 
         public SettingsService()
         {
-            _filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FILE_NAME);
+            try
+            {
+                string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                string folder = Path.Combine(appData, "RobloxAccountManager");
+                if (!Directory.Exists(folder))
+                {
+                    Directory.CreateDirectory(folder);
+                }
+                _filePath = Path.Combine(folder, FILE_NAME);
+
+                // Migration: Check if old settings exist in BaseDirectory and move/copy them
+                string oldPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FILE_NAME);
+                if (File.Exists(oldPath) && !File.Exists(_filePath))
+                {
+                    try 
+                    {
+                        File.Copy(oldPath, _filePath); 
+                        System.Diagnostics.Debug.WriteLine("Migrated settings from local to AppData");
+                    } 
+                    catch { }
+                }
+            }
+            catch
+            {
+                // Fallback
+                _filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FILE_NAME);
+            }
+
             CurrentSettings = new AppSettings();
             LoadSettings();
         }

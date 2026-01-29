@@ -22,6 +22,84 @@ namespace RobloxAccountManager.Services
 
         // Event to notify when a session gets a Job ID (UserId, PlaceId, JobId)
         public event Action<long, long, string>? SessionJobIdUpdated; 
+        
+        private readonly System.Threading.Timer _monitoringTimer;
+
+        public RobloxProcessManager()
+        {
+            _monitoringTimer = new System.Threading.Timer(MonitorMemoryUsage, null, 1000, 1000);
+        }
+
+        private void MonitorMemoryUsage(object? state)
+        {
+            if (ActiveSessions.Count == 0) return;
+
+            try
+            {
+                // Get System Free RAM
+                ulong freeRam = 0;
+                var memStatus = new MEMORYSTATUSEX();
+                if (GlobalMemoryStatusEx(memStatus))
+                {
+                    freeRam = memStatus.ullAvailPhys;
+                }
+                
+                double freeMb = Math.Round(freeRam / 1024.0 / 1024.0, 0);
+
+                var sessions = ActiveSessions.ToList(); // Snapshot
+                foreach (var session in sessions)
+                {
+                    try
+                    {
+                        var proc = Process.GetProcessById(session.ProcessId);
+                        proc.Refresh(); // Important to get latest stats
+                        long usedBytes = proc.WorkingSet64;
+                        double usedMb = Math.Round(usedBytes / 1024.0 / 1024.0, 0);
+
+                        // Update on UI Thread if needed, but ObservableObject handles PropertyChanged.
+                        // However, since we are on background thread, we should check if dispatching is needed for collection items?
+                        // ObservableObject properties raise PropertyChanged. WPF data binding marshals to UI thread automatically for single properties 
+                        // typically, but safe to verify.
+                        
+                        // Actually, updating properties on a background thread for an object bound to UI *usually* throws in WPF unless 
+                        // you are using BindingOperations.EnableCollectionSynchronization or dispatching.
+                        // Let's modify directly; if it throws we'll add dispatch.
+                        
+                        // Update values
+                        if (session.RamUsageMb != usedMb) session.RamUsageMb = usedMb;
+                        if (session.FreeRamMb != freeMb) session.FreeRamMb = freeMb;
+                    }
+                    catch
+                    {
+                        // Process might have exited
+                    }
+                }
+            }
+            catch { }
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        private class MEMORYSTATUSEX
+        {
+            public uint dwLength;
+            public uint dwMemoryLoad;
+            public ulong ullTotalPhys;
+            public ulong ullAvailPhys;
+            public ulong ullTotalPageFile;
+            public ulong ullAvailPageFile;
+            public ulong ullTotalVirtual;
+            public ulong ullAvailVirtual;
+            public ulong ullAvailExtendedVirtual;
+
+            public MEMORYSTATUSEX()
+            {
+                this.dwLength = (uint)Marshal.SizeOf(typeof(MEMORYSTATUSEX));
+            }
+        }
+
+        [return: MarshalAs(UnmanagedType.Bool)]
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern bool GlobalMemoryStatusEx([In, Out] MEMORYSTATUSEX lpBuffer); 
 
         public class RobloxUserInfo
         {

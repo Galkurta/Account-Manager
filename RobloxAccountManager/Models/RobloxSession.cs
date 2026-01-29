@@ -35,6 +35,12 @@ namespace RobloxAccountManager.Models
         [ObservableProperty]
         private string? _placeName;
 
+        [ObservableProperty]
+        private double _ramUsageMb;
+
+        [ObservableProperty]
+        private double _freeRamMb;
+
         // Helper to kill the process
         public void Kill()
         {

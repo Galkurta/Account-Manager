@@ -49,7 +49,7 @@
                                 </Ellipse>
                                 
                                 <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Username}" FontSize="16" FontWeight="Medium">
+                                    <TextBlock FontSize="16" FontWeight="Medium">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="Text" Value="{Binding Username}"/>
@@ -61,7 +61,24 @@
                                             </Style>
                                         </TextBlock.Style>
                                     </TextBlock>
+                                    
                                     <TextBlock Text="{Binding Username}" FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Visibility="{Binding HasAlias, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                    
+                                    <!-- Description Display -->
+                                    <TextBlock Text="{Binding Description}" FontSize="12" Foreground="Gray" TextTrimming="CharacterEllipsis" MaxWidth="400" HorizontalAlignment="Left" Margin="0,2,0,0">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Description}" Value="">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Description}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
                                 </StackPanel>
 
                                 <ui:Button Grid.Column="3" Click="BtnEditAccount_Click" Icon="{ui:SymbolIcon Edit24}" Appearance="Transparent" VerticalAlignment="Center" ToolTip="Edit Account Details"/>

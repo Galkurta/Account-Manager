@@ -21,6 +21,26 @@
         
         <ui:TitleBar Title="Roblox Account Manager" Grid.Row="0"/>
 
+        <!-- Update Banner -->
+        <Border Grid.Row="1" VerticalAlignment="Top" Background="{DynamicResource PaletteGreenBrush}" 
+                Visibility="{Binding IsUpdateAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"
+                Panel.ZIndex="1000" Margin="10,0,10,0" CornerRadius="4" Height="40">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
+                    <ui:SymbolIcon Symbol="ArrowDownload24" Foreground="White" Margin="0,0,10,0"/>
+                    <TextBlock Foreground="White" VerticalAlignment="Center">
+                        <Run Text="New update available:"/>
+                        <Run Text="{Binding UpdateVersion}" FontWeight="Bold"/>
+                    </TextBlock>
+                </StackPanel>
+                <ui:Button Grid.Column="1" Content="Update Now" Command="{Binding PerformUpdateCommand}" Margin="5" Appearance="Primary" Foreground="Black" Background="White"/>
+            </Grid>
+        </Border>
+
         <ui:NavigationView Grid.Row="1" PaneDisplayMode="Top" IsBackButtonVisible="Collapsed" IsPaneToggleVisible="False"
                            ScrollViewer.HorizontalScrollBarVisibility="Auto"
                            ScrollViewer.VerticalScrollBarVisibility="Disabled"

@@ -107,6 +107,39 @@ namespace RobloxAccountManager.ViewModels
             {
                 Accounts.Add(acc);
             }
+
+            CheckForUpdates();
+        }
+
+        private async void CheckForUpdates()
+        {
+            var updateService = new UpdateService();
+            var release = await updateService.CheckForUpdatesAsync();
+            if (release != null)
+            {
+                IsUpdateAvailable = true;
+                UpdateVersion = release.TagName;
+                _pendingUpdate = release;
+                Log($"[Update] New version found: {release.TagName}");
+            }
+        }
+
+        [ObservableProperty]
+        private bool _isUpdateAvailable;
+
+        [ObservableProperty]
+        private string _updateVersion = string.Empty;
+
+        private GithubRelease? _pendingUpdate;
+
+        [RelayCommand]
+        public async Task PerformUpdate()
+        {
+            if (_pendingUpdate == null) return;
+            
+            var updateService = new UpdateService();
+            Log("Downloading update...");
+            await updateService.DownloadAndInstallAsync(_pendingUpdate);
         }
 
         [RelayCommand]

@@ -16,6 +16,9 @@ namespace RobloxAccountManager.ViewModels
         private string _aliasEditBuffer = string.Empty;
 
         [ObservableProperty]
+        private string _descriptionEditBuffer = string.Empty;
+
+        [ObservableProperty]
         private string _username = "";
 
         [ObservableProperty]
@@ -39,6 +42,7 @@ namespace RobloxAccountManager.ViewModels
             UserId = account.UserId.ToString();
             AvatarUrl = account.AvatarUrl;
             AliasEditBuffer = account.Alias;
+            DescriptionEditBuffer = account.Description;
             
             ExpirationText = account.ExpirationDate.HasValue 
                 ? account.ExpirationDate.Value.ToString("g") 
@@ -51,6 +55,7 @@ namespace RobloxAccountManager.ViewModels
             if (SelectedAccount != null)
             {
                 SelectedAccount.Alias = AliasEditBuffer;
+                SelectedAccount.Description = DescriptionEditBuffer;
                 _mainViewModel.SaveAccounts();
             }
             _mainViewModel.NavigateAccounts();
