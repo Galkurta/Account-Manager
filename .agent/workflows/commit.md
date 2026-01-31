@@ -8,7 +8,15 @@ Quick workflow for committing changes to the repository with auto-merge support.
 
 ## Steps
 
-### 1. Check Status
+### 1. Sync Changes (Pull)
+
+// turbo
+
+```powershell
+git pull origin main
+```
+
+### 2. Check Status
 
 // turbo
 
@@ -18,7 +26,7 @@ git status
 
 Review the changed files and ensure only intended files are modified.
 
-### 2. Stage Changes
+### 3. Stage Changes
 
 For specific files:
 
@@ -33,7 +41,7 @@ For all changes:
 git add .
 ```
 
-### 3. Commit with Message
+### 4. Commit with Message
 
 Use conventional commit format:
 
@@ -57,7 +65,7 @@ git commit -m "fix: resolve sub-place launch loop"
 git commit -m "docs: update README with new features"
 ```
 
-### 4. Push to Feature Branch (if main is protected)
+### 5. Push to Feature Branch (if main is protected)
 
 If pushing to `main` fails due to branch protection:
 
@@ -79,7 +87,7 @@ gh pr merge --auto --squash --delete-branch
 The `--auto-merge` flag will automatically merge the PR once all checks pass.
 The `--delete-branch` flag will automatically delete the branch after merge.
 
-### 5. Direct Push (if no branch protection)
+### 6. Direct Push (if no branch protection)
 
 // turbo
 
