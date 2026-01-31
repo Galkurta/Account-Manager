@@ -165,6 +165,29 @@ namespace RobloxAccountManager.Services
             return null;
         }
 
+        public async Task<long?> GetRootPlaceIdAsync(long placeId)
+        {
+            try
+            {
+                var universeId = await GetUniverseIdAsync(placeId);
+                if (universeId == null) return null;
+
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("User-Agent", UserAgent);
+
+                string url = $"https://games.roblox.com/v1/games?universeIds={universeId}";
+                var response = await client.GetStringAsync(url);
+                using var doc = JsonDocument.Parse(response);
+                if (doc.RootElement.TryGetProperty("data", out var data) && data.GetArrayLength() > 0)
+                {
+                    var rootId = data[0].GetProperty("rootPlaceId").GetInt64();
+                    return rootId;
+                }
+            }
+            catch { /* Ignore */ }
+            return null;
+        }
+
         public async Task<string?> GetGameNameFromPlaceIdAsync(long placeId)
         {
             var universeId = await GetUniverseIdAsync(placeId);
