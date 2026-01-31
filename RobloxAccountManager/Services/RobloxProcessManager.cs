@@ -233,6 +233,24 @@ namespace RobloxAccountManager.Services
                 string placeLauncherUrl = "";
                 long actualPlaceId = placeId == null ? 1818 : long.Parse(placeId); // Default to Crossroads if null
 
+                // --- Restricted Place Check ---
+                // If launching into a Sub-Place directly could cause a loop/fail, fallback to Root Place.
+                if (placeId != null) 
+                {
+                    try 
+                    {
+                        var rootPlaceId = await _requestService.GetRootPlaceIdAsync(actualPlaceId);
+                        if (rootPlaceId.HasValue && rootPlaceId.Value != actualPlaceId)
+                        {
+                            LogService.Log($"Detected attempt to launch into Sub-Place ({actualPlaceId}). Fallback to Root Place ({rootPlaceId.Value}).", LogLevel.Warning, "Process");
+                            actualPlaceId = rootPlaceId.Value;
+                            jobId = null; // Invalidate JobID for sub-place
+                            // accessCode = null; // Private Servers are usually Root Place bound anyway.
+                        }
+                    }
+                    catch { /* Ignore check failure */ }
+                }
+
                 if (!string.IsNullOrWhiteSpace(accessCode))
                 {
                      // Private Server
@@ -251,7 +269,7 @@ namespace RobloxAccountManager.Services
                      // Standard Game Join
                      // Electron: request=RequestGame&browserTrackerId=...&placeId=...
                      placeLauncherUrl = $"https://assetgame.roblox.com/game/PlaceLauncher.ashx?request=RequestGame&browserTrackerId={browserTrackerId}&placeId={actualPlaceId}&isPlayTogetherGame=false";
-                     LogService.Log(placeId == null ? "Launching App (Hub)" : $"Joining Place: {placeId}", LogLevel.Info, "Process");
+                     LogService.Log(placeId == null ? "Launching App (Hub)" : $"Joining Place: {actualPlaceId}", LogLevel.Info, "Process");
                 }
 
 

@@ -33,7 +33,7 @@ namespace RobloxAccountManager.Services
         public event Action<long, string>? OnSessionStatusChanged; // Per-session status updates (UserId, StatusMessage)
         
  
-        public Func<long, string, string, Task>? RelaunchCallback { get; set; }
+        public Func<long, string?, string, Task>? RelaunchCallback { get; set; }
 
         public bool IsRunning => _isRunning;
 
@@ -149,10 +149,14 @@ namespace RobloxAccountManager.Services
 
                 var (success, presence) = await _requestService.GetAuthenticatedUserPresenceAsync(session.AuthCookie, session.UserId);
                 
-                if (!success || presence == null) return; // API fail, skip
-
+                if (!success || presence == null) 
+                {
+                    Log($"[{session.UserId}] Presence check failed (API Error).");
+                    return; 
+                }
 
                 bool isInGame = presence.UserPresenceType == 2;
+                // Log($"[{session.UserId}] Presence: {presence.UserPresenceType} ({presence.LastLocation})");
                 Guid? currentGameId = null;
                 if (isInGame && !string.IsNullOrEmpty(presence.GameId) && Guid.TryParse(presence.GameId, out var gid))
                 {
@@ -180,20 +184,45 @@ namespace RobloxAccountManager.Services
                     {
                         if (session.PlaceId.HasValue)
                         {
-                            Log($"[{session.UserId}] Disconnect detected! Rejoining in {_settingsService.CurrentSettings.AutoRejoinDelaySeconds}s...");
+                            Log($"[{session.UserId}] Disconnect detected! Waiting {_settingsService.CurrentSettings.AutoRejoinDelaySeconds}s to verify...");
                             OnSessionStatusChanged?.Invoke(session.UserId, $"Waiting {_settingsService.CurrentSettings.AutoRejoinDelaySeconds}s...");
                             
                             // Webhook handled by ProcessManager.Exited
 
                             await Task.Delay(_settingsService.CurrentSettings.AutoRejoinDelaySeconds * 1000, token);
                             
+                            // Double Check: Did they just teleport?
+                            var (retrySuccess, retryPresence) = await _requestService.GetAuthenticatedUserPresenceAsync(session.AuthCookie, session.UserId);
+                            if (retrySuccess && retryPresence != null && retryPresence.UserPresenceType == 2)
+                            {
+                                Log($"[{session.UserId}] User reconnected/teleported. Rejoin cancelled.");
+                                OnSessionStatusChanged?.Invoke(session.UserId, "Playing");
+
+                                // Update info
+                                if (!string.IsNullOrEmpty(retryPresence.GameId) && Guid.TryParse(retryPresence.GameId, out var newGid))
+                                {
+                                    session.LastGameId = newGid;
+                                }
+                                if (retryPresence.PlaceId != null) session.PlaceId = retryPresence.PlaceId;
+                                return;
+                            }
+
                             OnSessionStatusChanged?.Invoke(session.UserId, "Rejoining...");
 
                             if (RelaunchCallback != null)
                             {
-                                string jobId = session.LastGameId.Value.ToString();
+                                string? jobId = session.LastGameId.Value.ToString();
                                 string placeId = session.PlaceId.Value.ToString();
                                 
+                                // Check if this is a sub-place (Restricted?)
+                                var rootPlaceId = await _requestService.GetRootPlaceIdAsync(session.PlaceId.Value);
+                                if (rootPlaceId.HasValue && rootPlaceId.Value != session.PlaceId.Value)
+                                {
+                                    Log($"[{session.UserId}] Detected sub-place ({session.PlaceId}). Falling back to Root Place ({rootPlaceId}) to avoid launch loop.");
+                                    placeId = rootPlaceId.Value.ToString();
+                                    jobId = null; // Cannot use sub-place JobId for Root Place
+                                }
+
                                 await RelaunchCallback.Invoke(session.UserId, jobId, placeId);
                             }
                         }
