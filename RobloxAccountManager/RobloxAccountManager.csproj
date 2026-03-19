@@ -14,7 +14,7 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.4" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3856.49" />
-    <PackageReference Include="System.Management" Version="10.0.4" />
+    <PackageReference Include="System.Management" Version="10.0.5" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.5" />
     <PackageReference Include="WPF-UI" Version="4.2.0" />
   </ItemGroup>
